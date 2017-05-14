@@ -9,6 +9,7 @@ import com.khorn.terraincontrol.configuration.standard.PluginStandardValues;
 import com.khorn.terraincontrol.events.EventPriority;
 import com.khorn.terraincontrol.exception.BiomeNotFoundException;
 import com.khorn.terraincontrol.forge.client.events.ClientNetworkEventListener;
+import com.khorn.terraincontrol.forge.client.events.DimensionSyncChannelHandler;
 import com.khorn.terraincontrol.forge.events.*;
 import com.khorn.terraincontrol.forge.generator.Cartographer;
 import com.khorn.terraincontrol.forge.generator.ForgeVanillaBiomeGenerator;
@@ -19,7 +20,6 @@ import com.khorn.terraincontrol.generator.biome.VanillaBiomeGenerator;
 import com.khorn.terraincontrol.logging.LogMarker;
 import com.khorn.terraincontrol.util.minecraftTypes.StructureNames;
 
-import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.structure.MapGenStructureIO;
@@ -29,17 +29,16 @@ import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.network.FMLEmbeddedChannel;
 import net.minecraftforge.fml.common.network.FMLEventChannel;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.io.File;
+import java.util.EnumMap;
 
-@Mod(modid = "openterraingenerator", name = "Open Terrain Generator", acceptableRemoteVersions = "*", version = "v14")
+@Mod(modid = "openterraingenerator", name = "Open Terrain Generator", acceptableRemoteVersions = "*", version = "v18")
 public class TCPlugin
 {
 	public TCPlugin()
@@ -48,7 +47,9 @@ public class TCPlugin
 	}
 	
     private WorldLoader worldLoader;
-    public static TCWorldType tcWorldType;
+    public static TCWorldType tcWorldType;    
+    
+    public static EnumMap<Side, FMLEmbeddedChannel> channels;
 
     @EventHandler
     public void load(FMLInitializationEvent event)
@@ -80,8 +81,10 @@ public class TCPlugin
             FMLEventChannel eventDrivenChannel = NetworkRegistry.INSTANCE.newEventDrivenChannel(PluginStandardValues.ChannelName);
             eventDrivenChannel.register(networkHandler);
             MinecraftForge.EVENT_BUS.register(networkHandler);
-        }
-
+        }        
+        
+        channels = NetworkRegistry.INSTANCE.newChannel("OTGChannel", DimensionSyncChannelHandler.instance);
+        
         // Register player tracker, for sending configs.
         MinecraftForge.EVENT_BUS.register(new PlayerTracker());
 
@@ -101,7 +104,8 @@ public class TCPlugin
                 {
                     //biome = world.getBiomeByName(input.getBiomeName());
                 	biome = TerrainControl.getBiomeAllWorlds(input.getBiomeName());
-                } catch (BiomeNotFoundException e)
+                }
+                catch (BiomeNotFoundException e)
                 {
                     // Ignored, try in next world
                 }
@@ -114,6 +118,7 @@ public class TCPlugin
                 return biome.getBiomeConfig();
             }
         };
+        
         MinecraftForge.EVENT_BUS.register(new BiomeColorsListener(getBiomeConfig));
 
         // Register server tick handler for pre-generation of worlds
@@ -135,26 +140,8 @@ public class TCPlugin
     	
         // Register ChunkLoadListener for updating Cartographer map
         MinecraftForge.EVENT_BUS.register(new ChunkEventListener());
-        
-        try
-        {
-        	registerDimensions();
-        } catch(NoSuchMethodError ex) { }
     }
     
-    @SideOnly(Side.CLIENT)
-    private void registerDimensions()
-    {
-    	// TODO: LOL! This is a really lazy hack fix but it should work for now, improve this a.s.a.p.
-        for(int i = 2; i < 100; i++)
-        {
-        	if(!DimensionManager.isDimensionRegistered(i))
-        	{
-        		DimensionManager.registerDimension(i, DimensionType.register("OTGDim", "OTG", i, WorldProviderTC.class, false));
-        	}
-        }    	
-    }   
-
     @EventHandler
     public void serverLoad(FMLServerStartingEvent event)
     {    	

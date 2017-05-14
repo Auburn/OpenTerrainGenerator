@@ -3,9 +3,14 @@ package com.khorn.terraincontrol.forge.generator;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 
+import com.khorn.terraincontrol.LocalMaterialData;
+import com.khorn.terraincontrol.LocalWorld;
 import com.khorn.terraincontrol.TerrainControl;
 import com.khorn.terraincontrol.forge.ForgeEngine;
+import com.khorn.terraincontrol.forge.ForgeMaterialData;
+import com.khorn.terraincontrol.forge.ForgeWorld;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockPortal;
@@ -52,10 +57,6 @@ public class TCBlockPortal
 						break;
 					}
 				}
-				//else if (i == 0 || i > 1)
-				//{
-					//throw new RuntimeException("Whatever it is you're trying to do, we didn't write any code for it (sorry). Please contact Team OTG about this crash.");
-				//}
 			}
 		}
 		if(!bFound)
@@ -63,7 +64,7 @@ public class TCBlockPortal
 			return false;
 		}
 		
-		// If Cartographer is on and this is a Cartographer portal and no other dimensions were found don't spawn a portal.
+		// If Cartographer is on and this is not a Cartographer portal and no other dimensions were found don't spawn a portal.
 		IBlockState blockState = worldIn.getBlockState(pos);
 		BlockPos firstSolidBlockPos = new BlockPos(pos);
 		while(!blockState.getMaterial().isSolid() && firstSolidBlockPos.getY() > 0)
@@ -128,30 +129,48 @@ public class TCBlockPortal
                 ;
             }
 
-            int i = this.getDistanceUntilEdge(p_i45694_2_, this.leftDir, isQuartz) - 1;
-
-            if (i >= 0)
-            {
-                this.bottomLeft = p_i45694_2_.offset(this.leftDir, i);
-                this.width = this.getDistanceUntilEdge(this.bottomLeft, this.rightDir, isQuartz);
-
-                if (this.width < 2 || this.width > 21)
-                {
-                    this.bottomLeft = null;
-                    this.width = 0;
-                }
-            }
-
-            if (this.bottomLeft != null)
-            {
-                this.height = this.calculatePortalHeight(isQuartz);
-            }
+			ArrayList<LocalWorld> forgeWorlds = ((ForgeEngine)TerrainControl.getEngine()).getAllWorlds();
+			
+			for(LocalWorld localWorld : forgeWorlds)
+			{
+				ForgeWorld forgeWorld = (ForgeWorld)localWorld;
+				ArrayList<LocalMaterialData> portalMaterials = forgeWorld.getConfigs().getWorldConfig().DimensionPortalMaterials;
+	            
+				if(world.provider.getDimension() == forgeWorld.getWorld().provider.getDimension() && world.provider.getDimension() == 0)
+				{
+					continue; // For OverWorld don't allow portal using current dim's portal materials. (For other worlds such a portal leads to the OverWorld).
+				}
+				
+	            int i = this.getDistanceUntilEdge(portalMaterials, p_i45694_2_, this.leftDir, isQuartz) - 1;
+	
+	            if (i >= 0)
+	            {
+	                this.bottomLeft = p_i45694_2_.offset(this.leftDir, i);
+	                this.width = this.getDistanceUntilEdge(portalMaterials, this.bottomLeft, this.rightDir, isQuartz);
+	
+	                if (this.width < 2 || this.width > 21)
+	                {
+	                    this.bottomLeft = null;
+	                    this.width = 0;
+	                }
+	            }
+	
+	            if (this.bottomLeft != null)
+	            {
+	                this.height = this.calculatePortalHeight(portalMaterials, isQuartz);
+	            }
+	            
+	            if(height > 0 && width > 0)
+	            {
+	            	return;
+	            }
+			}
         }
 
-        protected int getDistanceUntilEdge(BlockPos p_180120_1_, EnumFacing p_180120_2_, boolean isQuartz)
+        protected int getDistanceUntilEdge(ArrayList<LocalMaterialData> portalMaterials, BlockPos p_180120_1_, EnumFacing p_180120_2_, boolean isQuartz)
         {
             int i;
-
+            
             for (i = 0; i < 22; ++i)
             {
                 BlockPos blockpos = p_180120_1_.offset(p_180120_2_, i);
@@ -159,7 +178,17 @@ public class TCBlockPortal
                 Block block = this.world.getBlockState(blockpos).getBlock();
                 IBlockState blockStateDown = this.world.getBlockState(blockpos.down());
                 Block blockDown = blockStateDown.getBlock();
-               
+
+				ForgeMaterialData material = ForgeMaterialData.ofMinecraftBlockState(blockStateDown);
+				boolean isPortalMaterial = false;
+				for(LocalMaterialData portalMaterial : portalMaterials)
+				{
+					if(material.toDefaultMaterial().equals(portalMaterial.toDefaultMaterial()) && material.getBlockData() == portalMaterial.getBlockData())
+					{
+						isPortalMaterial = true;
+					}
+				}
+                
                 if (
             		!this.isEmptyBlock(block) ||
             		(
@@ -167,21 +196,7 @@ public class TCBlockPortal
         				blockDown != Blocks.OBSIDIAN
     				) ||
             		(
-	            		isQuartz && 
-	    				!(
-							blockDown == Blocks.QUARTZ_BLOCK || 
-							blockDown == Blocks.QUARTZ_STAIRS || 
-							blockDown == Blocks.GLOWSTONE || 
-							(
-								(
-									blockDown == Blocks.STONE_SLAB2 || 
-									blockDown == Blocks.STONE_SLAB || 
-									blockDown == Blocks.DOUBLE_STONE_SLAB2 ||
-									blockDown == Blocks.DOUBLE_STONE_SLAB
-								) && 
-								(byte) blockStateDown.getBlock().getMetaFromState(blockStateDown) == 7
-							)
-						)
+	            		isQuartz && !isPortalMaterial
 					)
 				)
                 {
@@ -191,6 +206,17 @@ public class TCBlockPortal
 
             IBlockState blockState = this.world.getBlockState(p_180120_1_.offset(p_180120_2_, i));
             Block block = blockState.getBlock();
+            
+			ForgeMaterialData material = ForgeMaterialData.ofMinecraftBlockState(blockState);
+			boolean isPortalMaterial = false;
+			for(LocalMaterialData portalMaterial : portalMaterials)
+			{
+				if(material.toDefaultMaterial().equals(portalMaterial.toDefaultMaterial()) && material.getBlockData() == portalMaterial.getBlockData())
+				{
+					isPortalMaterial = true;
+				}
+			}
+            
             return 
     		(
     			(
@@ -198,21 +224,7 @@ public class TCBlockPortal
 					block == Blocks.OBSIDIAN
     			) ||
 				(
-	        		isQuartz && 
-	        		(
-	    				block == Blocks.QUARTZ_BLOCK || 
-	    				block == Blocks.QUARTZ_STAIRS || 
-	    				block == Blocks.GLOWSTONE || 
-	    				(
-							(
-								block == Blocks.STONE_SLAB2 || 
-								block == Blocks.STONE_SLAB || 
-								block == Blocks.DOUBLE_STONE_SLAB2 || 
-								block == Blocks.DOUBLE_STONE_SLAB
-							) && 
-							(byte) blockState.getBlock().getMetaFromState(blockState) == 7
-						)
-					)
+	        		isQuartz && isPortalMaterial
 				)
 			) ? i : 0;
         }
@@ -227,10 +239,10 @@ public class TCBlockPortal
             return this.width;
         }
 
-        protected int calculatePortalHeight(boolean isQuartz)
-        {
-            label24:
-
+        protected int calculatePortalHeight(ArrayList<LocalMaterialData> portalMaterials, boolean isQuartz)
+        {        	
+        	label24:
+        	
             for (this.height = 0; this.height < 21; ++this.height)
             {
                 for (int i = 0; i < this.width; ++i)
@@ -253,6 +265,16 @@ public class TCBlockPortal
                     	IBlockState blockState = this.world.getBlockState(blockpos.offset(this.leftDir));
                         block = blockState.getBlock();
 
+        				ForgeMaterialData material = ForgeMaterialData.ofMinecraftBlockState(blockState);
+        				boolean isPortalMaterial = false;
+        				for(LocalMaterialData portalMaterial : portalMaterials)
+        				{
+        					if(material.toDefaultMaterial().equals(portalMaterial.toDefaultMaterial()) && material.getBlockData() == portalMaterial.getBlockData())
+        					{
+        						isPortalMaterial = true;
+        					}
+        				}
+                        
                         if (
                     		!(
                     			(
@@ -260,21 +282,7 @@ public class TCBlockPortal
                 					block == Blocks.OBSIDIAN
             					) ||
                 				(
-	                				isQuartz && 
-	                				(
-	            						block == Blocks.QUARTZ_BLOCK || 
-	            						block == Blocks.QUARTZ_STAIRS || 
-	            						block == Blocks.GLOWSTONE || 
-	            						(
-	        								(
-	    										block == Blocks.STONE_SLAB2 || 
-	    										block == Blocks.STONE_SLAB || 
-	    										block == Blocks.DOUBLE_STONE_SLAB2 || 
-	    										block == Blocks.DOUBLE_STONE_SLAB
-											) && 
-											(byte) blockState.getBlock().getMetaFromState(blockState) == 7
-										)
-									)
+	                				isQuartz && isPortalMaterial
 								)
 							)
                 		)
@@ -287,6 +295,16 @@ public class TCBlockPortal
                     	IBlockState blockState = this.world.getBlockState(blockpos.offset(this.rightDir));
                         block = blockState.getBlock();
 
+        				ForgeMaterialData material = ForgeMaterialData.ofMinecraftBlockState(blockState);
+        				boolean isPortalMaterial = false;
+        				for(LocalMaterialData portalMaterial : portalMaterials)
+        				{
+        					if(material.toDefaultMaterial().equals(portalMaterial.toDefaultMaterial()) && material.getBlockData() == portalMaterial.getBlockData())
+        					{
+        						isPortalMaterial = true;
+        					}
+        				}
+                        
                         if (
                     		!(
                     			(
@@ -294,21 +312,7 @@ public class TCBlockPortal
                 					block == Blocks.OBSIDIAN
             					) ||                    			
                 				(
-	                				isQuartz && 
-	                				(
-	            						block == Blocks.QUARTZ_BLOCK || 
-	            						block == Blocks.QUARTZ_STAIRS || 
-	            						block == Blocks.GLOWSTONE || 
-	            						(
-	        								(
-	    										block == Blocks.STONE_SLAB2 || 
-	    										block == Blocks.STONE_SLAB || 
-	    										block == Blocks.DOUBLE_STONE_SLAB2 ||
-	    										block == Blocks.DOUBLE_STONE_SLAB
-											) && 
-											(byte) blockState.getBlock().getMetaFromState(blockState) == 7
-										)
-									)
+	                				isQuartz && isPortalMaterial
 								)
 							)
 						)
@@ -322,7 +326,18 @@ public class TCBlockPortal
             for (int j = 0; j < this.width; ++j)
             {
             	IBlockState blockState = this.world.getBlockState(this.bottomLeft.offset(this.rightDir, j).up(this.height));
-            	Block block = blockState.getBlock();                	
+            	Block block = blockState.getBlock();
+            	
+				ForgeMaterialData material = ForgeMaterialData.ofMinecraftBlockState(blockState);
+				boolean isPortalMaterial = false;
+				for(LocalMaterialData portalMaterial : portalMaterials)
+				{
+					if(material.toDefaultMaterial().equals(portalMaterial.toDefaultMaterial()) && material.getBlockData() == portalMaterial.getBlockData())
+					{
+						isPortalMaterial = true;
+					}
+				}
+            	
                 if (
             		!(
         				(
@@ -330,21 +345,7 @@ public class TCBlockPortal
     						block == Blocks.OBSIDIAN
 						) ||
         				(
-	        				isQuartz && 
-	        				(
-	    						block == Blocks.QUARTZ_BLOCK || 
-	    						block == Blocks.QUARTZ_STAIRS || 
-	    						block == Blocks.GLOWSTONE || 
-	    						(
-									(
-										block == Blocks.STONE_SLAB2 ||
-										block == Blocks.STONE_SLAB || 
-										block == Blocks.DOUBLE_STONE_SLAB2 || 
-										block == Blocks.DOUBLE_STONE_SLAB
-									) && 
-									(byte) blockState.getBlock().getMetaFromState(blockState) == 7
-								)
-							)
+	        				isQuartz && isPortalMaterial
 						)
 					)
 				)
@@ -357,9 +358,7 @@ public class TCBlockPortal
             if (this.height <= 21 && this.height >= 3)
             {
                 return this.height;
-            }
-            else
-            {
+            } else {
                 this.bottomLeft = null;
                 this.width = 0;
                 this.height = 0;
@@ -391,10 +390,10 @@ public class TCBlockPortal
         }
     }
     
-    public static void placeInExistingPortal(BlockPos pos)
+    public static void placeInExistingPortal(int dimensionId, BlockPos pos)
     {    
     	MinecraftServer mcServer = FMLCommonHandler.instance().getMinecraftServerInstance();
-    	WorldServer worldServerInstance = mcServer.worldServerForDimension(0);
+    	WorldServer worldServerInstance = mcServer.worldServerForDimension(dimensionId);
     	Long2ObjectMap<Teleporter.PortalPosition> destinationCoordinateCache = null;
     	Teleporter _this = worldServerInstance.getDefaultTeleporter();
 		try {

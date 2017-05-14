@@ -1066,12 +1066,5 @@ public class BiomeConfig extends ConfigFile
         stream.writeBoolean(this.foliageColorIsMultiplier);
 
         writeStringToStream(stream, this.biomeDictId);
-        
-        if(isSinglePlayer) // Forge SP seems to handle some part of mob spawning on the client so need to send mob spawning info.
-        {             
-	        writeStringToStream(stream, this.inheritMobsBiomeName);
-        }
-        
-        TerrainControl.getEngine().addPlatformSpecificDataToPacket(stream, this, isSinglePlayer);
     }
 }

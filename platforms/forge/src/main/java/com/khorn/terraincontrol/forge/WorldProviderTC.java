@@ -29,7 +29,7 @@ public class WorldProviderTC extends WorldProvider
     {
 		if(IsCartographer())
 		{
-			return "Welcome to the Cartographer, traveller. This place is a hub between worlds, from here you can observe the world and transport living things and items to any place you desire.";
+			return "Welcome traveller, to the Cartographer, the hub between worlds. From here you can observe the world and transport living things and items to any place you desire.";
 		} else {
 			return "Entering dimension " + dimType.getName();
 		}

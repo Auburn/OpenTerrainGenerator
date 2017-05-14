@@ -210,15 +210,12 @@ public class Cartographer
 			        				{
 			        					CreateBlockWorldMapAtSpawn(realChunkCoord, false);
 			        				}
-		        					//derp++;
 			        			}
 							}
 						}
 		    		}
 		    	}
 		    	destinationCoordinateCache = null;
-				
-				//TerrainControl.log(LogMarker.INFO, "lastUpdateTime took " + (System.currentTimeMillis() - lastUpdateTime) + " ms " + derp + " chunks");
 			}
 		}
 	}

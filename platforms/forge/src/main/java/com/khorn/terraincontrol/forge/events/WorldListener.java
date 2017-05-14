@@ -17,6 +17,21 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class WorldListener
 {
 	@SubscribeEvent
+	@SideOnly(Side.CLIENT)
+	public void onWorldLoad(WorldEvent.Load event)
+	{		
+		// For single player only one world is loaded on the client.		
+		for(LocalWorld localWorld : ((ForgeEngine)TerrainControl.getEngine()).getAllWorlds())
+		{
+			ForgeWorld forgeWorld = (ForgeWorld)localWorld;
+			if(forgeWorld.getWorld() == null && forgeWorld.clientDimensionId == event.getWorld().provider.getDimension())
+			{
+				forgeWorld.provideClientWorld(event.getWorld());
+			}
+		}
+	}
+	
+	@SubscribeEvent
 	public void onWorldSave(WorldEvent.Save event)
 	{
 		((ForgeEngine)TerrainControl.getEngine()).getPregenerator().SavePreGeneratorData(event.getWorld());

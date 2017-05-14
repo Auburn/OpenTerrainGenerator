@@ -14,7 +14,7 @@ public class ServerEventListener
 	public void onServerTick(ServerTickEvent event)
 	{		
 		if(event.phase == Phase.END)
-		{
+		{			
 			((ForgeEngine)TerrainControl.getEngine()).getPregenerator().ProcessTick();
 			
 			if(((ForgeEngine)TerrainControl.getEngine()).getOverWorld() != null) // If overworld is null then the overworld is not an OTG world

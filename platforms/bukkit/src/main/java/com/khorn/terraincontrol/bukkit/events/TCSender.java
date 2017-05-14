@@ -16,8 +16,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class TCSender
-{
-    
+{   
     private TCPlugin plugin;
 
     public TCSender(TCPlugin plugin)
@@ -41,7 +40,7 @@ public class TCSender
             try
             {
                 stream.writeInt(PluginStandardValues.ProtocolVersion);
-                ConfigToNetworkSender.send(configs, stream, false);
+                ConfigToNetworkSender.writeConfigsToStream(configs, stream, false);
                 stream.flush();
             } catch (IOException e)
             {
@@ -53,5 +52,4 @@ public class TCSender
             player.sendPluginMessage(plugin, PluginStandardValues.ChannelName, data);
         }
     }
-
 }

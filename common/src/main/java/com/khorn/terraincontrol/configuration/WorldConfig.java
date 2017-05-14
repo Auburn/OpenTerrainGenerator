@@ -194,9 +194,9 @@ public class WorldConfig extends ConfigFile
     
     public boolean Cartographer;
     public boolean DimensionsEnabled;
+    public ArrayList<LocalMaterialData> DimensionPortalMaterials;
     
-    public String BO3AtSpawn;
-    
+    public String BO3AtSpawn;    
     
     /**
      * Creates a WorldConfig from the WorldConfig.ini file found in the given
@@ -528,18 +528,19 @@ public class WorldConfig extends ConfigFile
 
         this.author = reader.getSetting(WorldStandardValues.AUTHOR);
         this.description = reader.getSetting(WorldStandardValues.DESCRIPTION);
-        
+
         this.PreGenerationRadius = reader.getSetting(WorldStandardValues.PREGENERATION_RADIUS);
         this.WorldBorderRadius = reader.getSetting(WorldStandardValues.WORLD_BORDER_RADIUS);
-        
+
         this.worldSeed = reader.getSetting(WorldStandardValues.WORLD_SEED);
-        
+
         this.BO3AtSpawn = reader.getSetting(WorldStandardValues.BO3_AT_SPAWN);
-        
+
         this.Cartographer = reader.getSetting(WorldStandardValues.CARTOGRAPHER);
-        
+
         this.DimensionsEnabled = reader.getSetting(WorldStandardValues.DIMENSIONSENABLED);
         
+        this.DimensionPortalMaterials = reader.getSetting(WorldStandardValues.DIMENSION_PORTAL_MATERIALS);
     }
 
     private void readBiomeGroups(SettingsMap reader)
@@ -1074,11 +1075,14 @@ public class WorldConfig extends ConfigFile
 		);
         
         // Dimensions
-        writer.bigTitle("Dimension");
+        writer.bigTitle("Dimension");        
         writer.putSetting(WorldStandardValues.DIMENSIONSENABLED, this.DimensionsEnabled,
                 "Enables /otg dim commands and quartz portals for creating and travelling to other dimensions with seperate worlds.");
         writer.putSetting(WorldStandardValues.DIMENSIONS, this.Dimensions,
                 "Dimensions that should be loaded for this world at world creation (requires DimensionsEnabled: true. A world directory of the same name must be present in mods/OpenTerrainGenerator/worlds/");
+        writer.putSetting(WorldStandardValues.DIMENSION_PORTAL_MATERIALS, this.DimensionPortalMaterials,
+                "A comma seperated list of blocks, dimension portals made of one or more of these blocks will lead to this world.");               
+        
         writer.putSetting(WorldStandardValues.CARTOGRAPHER, this.Cartographer,
                 "Currently in development, the Cartographer is a miniature version of the world (1/16th scale) that can be used to view the world (including players) and teleport players and items. Setting this to true loads and updates the Cartographer world map in the Cartographer dimension (does not require DimensionsEnabled: true). The Cartographer can be reached via a Quartz portal with a chiseled quartz base. The mods/OpenTerrainGenerator/worlds/DIM-Cartographer directory must be present (if you also have OTG-Cartographer.jar in your mods directory worlds/DIM-Cartographer should be created automatically).");
     }

@@ -70,6 +70,8 @@ import java.util.*;
 
 public class ForgeWorld implements LocalWorld
 {
+	public int clientDimensionId = 0;
+	
     private ChunkProvider generator;
     public World world;
     private ConfigProvider settings;
@@ -641,13 +643,22 @@ public class ForgeWorld implements LocalWorld
 
         DefaultMaterial defaultMaterial = material.toDefaultMaterial();
         
+        // TODO: Fix this
         if(defaultMaterial.equals(DefaultMaterial.DIODE_BLOCK_ON))
         {
         	material = ForgeMaterialData.ofDefaultMaterial(DefaultMaterial.DIODE_BLOCK_OFF, material.getBlockData());
         }
-        else if(defaultMaterial.equals(DefaultMaterial.REDSTONE_COMPARATOR_OFF))
+        else if(defaultMaterial.equals(DefaultMaterial.REDSTONE_COMPARATOR_ON))
         {
         	material = ForgeMaterialData.ofDefaultMaterial(DefaultMaterial.REDSTONE_COMPARATOR_OFF, material.getBlockData());
+        }
+        else if(defaultMaterial.equals(DefaultMaterial.REDSTONE_LAMP_ON))
+        {
+        	material = ForgeMaterialData.ofDefaultMaterial(DefaultMaterial.REDSTONE_LAMP_OFF, material.getBlockData());
+        }
+        else if(defaultMaterial.equals(DefaultMaterial.REDSTONE_TORCH_ON))
+        {
+        	material = ForgeMaterialData.ofDefaultMaterial(DefaultMaterial.REDSTONE_TORCH_OFF, material.getBlockData());
         }
         
         IBlockState newState = ((ForgeMaterialData) material).internalBlock();
@@ -825,13 +836,26 @@ public class ForgeWorld implements LocalWorld
     }
 
     @SideOnly(Side.CLIENT)
-    public void provideClientConfigs(WorldClient world, ClientConfigProvider config)
+    public void provideClientConfigsBukkit(WorldClient world, ClientConfigProvider config)
     {
         this.settings = config;
         this.world = world;
         this.seed = world.getSeed();
     }
+    
+    @SideOnly(Side.CLIENT)
+    public void provideClientConfigs(ClientConfigProvider config)
+    {
+        this.settings = config;
+    }
 
+    @SideOnly(Side.CLIENT)
+    public void provideClientWorld(World world)
+    {
+        this.world = world;
+        this.seed = world.getSeed();
+    }
+    
     /**
      * Call this method when the configs are loaded.
      * @param configs The configs.
@@ -1162,6 +1186,7 @@ public class ForgeWorld implements LocalWorld
 		        String biomeNameForRegistry = StringHelper.toComputerFriendlyName(localBiome.getName());                      
 		        String resourceDomain = PluginStandardValues.PLUGIN_NAME.toLowerCase();		        
 		        ResourceLocation registryKey = new ResourceLocation(resourceDomain, biomeNameForRegistry);
+		        
 		        ((ForgeEngine)TerrainControl.getEngine()).unRegisterForgeBiome(registryKey);
 			}
 		}

@@ -1,6 +1,5 @@
 package com.khorn.terraincontrol.forge.client.events;
 
-import com.google.common.base.Preconditions;
 import com.khorn.terraincontrol.TerrainControl;
 import com.khorn.terraincontrol.configuration.standard.PluginStandardValues;
 import com.khorn.terraincontrol.forge.WorldLoader;
@@ -28,9 +27,12 @@ public class ClientNetworkEventListener
 
     public ClientNetworkEventListener(WorldLoader worldLoader)
     {
-        this.worldLoader = Preconditions.checkNotNull(worldLoader);
+        this.worldLoader = worldLoader;
     }
     
+    // Only used when receiving packets from Spigot/Bukkit servers
+    // Forge servers use a synchronous message channel for packet sending to ensure the packets with dimension and world data arrive before the world is loaded.
+    // This is necessary for the multi-dimension features. See: DimensionSyncChannelHandler and PlayerTracker.onConnectionCreated()
     @SubscribeEvent
     public void onPacketReceive(ClientCustomPacketEvent event)
     {    	    	    
@@ -56,7 +58,7 @@ public class ClientNetworkEventListener
                 // Server sent config
                 WorldClient worldMC = FMLClientHandler.instance().getClient().theWorld;
 
-                if (stream.readableBytes() > 4 && worldMC != null)
+                if (stream.readableBytes() > 4 && worldMC != null) // TODO: If worldMC == null, there's a problem, don't just ignore the packet?
                 {
                     // If the packet wasn't empty, and the client world exists:
                     // add the new biomes.
@@ -65,7 +67,7 @@ public class ClientNetworkEventListener
 
                     DataInputStream wrappedStream = new DataInputStream(new ByteBufInputStream(stream));
 
-                    this.worldLoader.registerClientWorld(worldMC, wrappedStream);
+                    this.worldLoader.registerClientWorldBukkit(worldMC, wrappedStream);
                 }
 
                 TerrainControl.log(LogMarker.TRACE, "Config received from server");
@@ -107,11 +109,4 @@ public class ClientNetworkEventListener
 
         Minecraft.getMinecraft().thePlayer.addChatMessage(chat);
     }
-
-    //@SubscribeEvent
-    //public void onDisconnect(ClientDisconnectionFromServerEvent event)
-    {
-        //this.worldLoader.onQuitFromServer();
-    }
-
 }

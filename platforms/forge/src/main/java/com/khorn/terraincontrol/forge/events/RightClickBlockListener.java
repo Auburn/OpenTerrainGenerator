@@ -10,6 +10,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemFlintAndSteel;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class RightClickBlockListener
@@ -25,8 +26,10 @@ public class RightClickBlockListener
 			if(cartographerEnabled || dimensionsEnabled)
 			{		
 				if(
-					event.getEntity().dimension != 1 && 
-					event.getEntity().dimension != -1 && 
+					(
+						event.getEntity().dimension == 0 ||
+						DimensionManager.getProviderType(event.getEntity().dimension).getSuffix().equals("OTG")					
+					) &&
 					event.getItemStack() != null && 
 					event.getItemStack().getItem() != null && 
 					event.getItemStack().getItem() instanceof ItemFlintAndSteel
@@ -62,7 +65,7 @@ public class RightClickBlockListener
 					{
 						event.setCanceled(true);
 						// Register the portal to the world's portals list
-				    	TCBlockPortal.placeInExistingPortal(blockInFront);
+				    	TCBlockPortal.placeInExistingPortal(event.getEntity().dimension, blockInFront);
 					}
 					// Make sure obsidian portals work in custom dimensions even though custom dimensions do not have dimensionType = DimensionType.OVERWORLD
 					else if(event.getWorld().provider.getDimension() > 1 && event.getWorld().getWorldType() instanceof TCWorldType)
@@ -71,7 +74,7 @@ public class RightClickBlockListener
 						{
 							event.setCanceled(true);
 							// Register the portal to the world's portals list
-					    	TCBlockPortal.placeInExistingPortal(blockInFront);
+					    	TCBlockPortal.placeInExistingPortal(event.getEntity().dimension, blockInFront);
 						}
 					}
 				}

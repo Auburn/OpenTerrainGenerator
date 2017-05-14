@@ -14,6 +14,8 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map.Entry;
 
+import org.apache.commons.io.FileUtils;
+
 import com.khorn.terraincontrol.TerrainControl;
 import com.khorn.terraincontrol.configuration.ServerConfigProvider;
 import com.khorn.terraincontrol.forge.generator.Cartographer;
@@ -82,6 +84,66 @@ public class TCDimensionManager
 		return newDimId;
 	}
 	
+	public static void DeleteDimension(int dimToRemove, ForgeWorld world, MinecraftServer server, boolean saveDimensionData)
+	{
+		if(DimensionManager.getWorld(dimToRemove) != null) // Can be null on the client if the world was unloaded(?)
+		{
+			DimensionManager.setWorld(dimToRemove, null, server);
+		}
+		if(DimensionManager.isDimensionRegistered(dimToRemove))
+		{
+			DimensionManager.unregisterDimension(dimToRemove);
+		}
+		
+		world.unRegisterBiomes();
+		
+		((ForgeEngine)TerrainControl.getEngine()).worldLoader.RemoveUnloadedWorld(world.getName());
+
+		TCDimensionManager.UnloadCustomDimensionData(dimToRemove);
+
+		BitSet dimensionMap = null;
+		try {
+			Field[] fields = DimensionManager.class.getDeclaredFields();
+			for(Field field : fields)
+			{
+				Class<?> fieldClass = field.getType();
+				if(fieldClass.equals(BitSet.class))
+				{
+					field.setAccessible(true);
+					dimensionMap = (BitSet) field.get(new DimensionManager());
+			        break;
+				}
+			}
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		}
+		
+		dimensionMap.clear(dimToRemove);
+		
+		if(saveDimensionData)
+		{
+			// This biome was unregistered via a console command, delete its world data
+			File dimensionSaveDir = new File(world.getWorld().getSaveHandler().getWorldDirectory() + "/DIM" + dimToRemove);
+			if(dimensionSaveDir.exists() && dimensionSaveDir.isDirectory())
+			{
+				TerrainControl.log(LogMarker.INFO, "Deleting world save data for dimension " + dimToRemove);
+				try {
+					FileUtils.deleteDirectory(dimensionSaveDir);								
+				} catch (IOException e) {
+					TerrainControl.log(LogMarker.ERROR, "Could not delete directory: " + e.toString());
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		
+			SaveDimensionData();
+		}
+	}
+		
     private static void initDimension(int dim, String dimensionName)
     {
         WorldServer overworld = DimensionManager.getWorld(0);
@@ -101,10 +163,9 @@ public class TCDimensionManager
         }
         MinecraftServer mcServer = overworld.getMinecraftServer();
         ISaveHandler savehandler = overworld.getSaveHandler();
-        //WorldSettings worldSettings = new WorldSettings(overworld.getWorldInfo());
 
         // TODO: Allow for different settings for each dimension.
-        // TODO: Changing seed here does work, but seed is forgotten after restart and overworld seed is used, fix this!       
+        // TODO: Changing seed here does work, but seed is forgotten after restart and overworld seed is used, fix this! <-- TODO: Is this still true?       
         
 		long seedIn = (long) Math.floor((Math.random() * Long.MAX_VALUE));
 		GameType gameType = mcServer.getGameType();
@@ -114,7 +175,6 @@ public class TCDimensionManager
 		
 		WorldSettings settings = new WorldSettings(seedIn, gameType, enableMapFeatures, hardcoreMode, worldTypeIn);
 		WorldInfo worldInfo = new WorldInfo(settings, overworld.getWorldInfo().getWorldName());        
-		//WorldInfo worldInfo = new WorldInfo(settings, dimensionName);
         WorldServer world = (WorldServer)(new TCWorldServerMulti(mcServer, savehandler, dim, overworld, mcServer.theProfiler, worldInfo).init());
                 
         ForgeWorld forgeWorld = (ForgeWorld) TerrainControl.getWorld(dimensionName);
@@ -130,13 +190,7 @@ public class TCDimensionManager
         
         world.addEventListener(new ServerWorldEventHandler(mcServer, world));
         MinecraftForge.EVENT_BUS.post(new WorldEvent.Load(world));
-        
-        //if (!mcServer.isSinglePlayer())
-        {
-            //world.getWorldInfo().setGameType(gameType);
-        }
-
-        
+                
         /*
 			world.getGameRules().setOrCreateGameRule("commandBlockOutput", "true"); 
 			world.getGameRules().setOrCreateGameRule("disableElytraMovementCheck, "true"); 
@@ -169,11 +223,11 @@ public class TCDimensionManager
 	public static void SaveDimensionData()
 	{	
 		World world = DimensionManager.getWorld(0);
-		File dimensionDataFile = new File(world.getSaveHandler().getWorldDirectory() + "/OpenTerrainGenerator/Dimensions.txt");		
+		File dimensionDataFile = new File(world.getSaveHandler().getWorldDirectory() + "/OpenTerrainGenerator/Dimensions.txt");
 		if(dimensionDataFile.exists())
 		{
 			dimensionDataFile.delete();
-		}		
+		}
 		
 		StringBuilder stringbuilder = new StringBuilder();
 
@@ -307,11 +361,6 @@ public class TCDimensionManager
 		{				
 			DimensionType dimType = DimensionManager.getProviderType(dimId);
 			
-			//if(dimType != null && !dimType.getSuffix().equals("OTG") && (dimId > 1))
-			//{
-				//throw new RuntimeException("Whatever it is you're trying to do, we didn't write any code for it (sorry). Please contact Team OTG about this crash.");
-			//}
-			
 			if(dimType != null && dimType.getSuffix().equals("OTG"))
 			{
 				DimensionManager.unregisterDimension(dimId);
@@ -320,7 +369,7 @@ public class TCDimensionManager
 		}
 	}
 	
-	public static void LoadCustomDimensionData()
+	public static OTGDimensionInfo GetOrderedDimensionData()
 	{
 		World world = DimensionManager.getWorld(0);
 		File dimensionDataFile = new File(world.getSaveHandler().getWorldDirectory() + "/OpenTerrainGenerator/Dimensions.txt");				
@@ -383,13 +432,20 @@ public class TCDimensionManager
 				highestOrder = dimData.dimensionOrder;
 			}
 		}
-		// Recreate dimensions in the correct order		
-				
-		for(int i = 0; i <= highestOrder; i++)
+		
+		return new OTGDimensionInfo(highestOrder, orderedDimensions);
+	}
+	
+	public static void LoadCustomDimensionData()
+	{
+		OTGDimensionInfo otgDimData = GetOrderedDimensionData();
+		
+		// Recreate dimensions in the correct order						
+		for(int i = 0; i <= otgDimData.highestOrder; i++)
 		{
-			if(orderedDimensions.containsKey(i))
+			if(otgDimData.orderedDimensions.containsKey(i))
 			{
-				DimensionData dimData = orderedDimensions.get(i);
+				DimensionData dimData = otgDimData.orderedDimensions.get(i);
 				
 				if(!DimensionManager.isDimensionRegistered(dimData.dimensionId))
 				{	
@@ -446,12 +502,63 @@ public class TCDimensionManager
 		oldDims = new Hashtable<Integer, DimensionType>();
 		for(int i = 2; i < Long.SIZE << 4; i++)
 		{
-			if(dimensions.containsKey(i))
+			if(dimensions.containsKey(i) && dimensions.get(i).getSuffix().equals("OTG"))
 			{
 				oldDims.put(i, dimensions.get(i));
 				dimensions.remove(i);
 			}
 		} 
+	}
+	
+	public static HashMap<Integer, String> GetAllOTGDimensions()
+	{
+    	Hashtable<Integer, DimensionType> dimensions = null;
+		try
+		{
+			Field[] fields = DimensionManager.class.getDeclaredFields();
+			for(Field field : fields)
+			{
+				Class<?> fieldClass = field.getType();
+				if(fieldClass.equals(Hashtable.class))
+				{
+					field.setAccessible(true);
+					Hashtable fieldAsHashTable = (Hashtable) field.get(new DimensionManager());
+					if(fieldAsHashTable.values().size() > 0)
+					{
+						Object value = fieldAsHashTable.values().toArray()[0];																
+						if(value instanceof DimensionType)
+						{							
+							dimensions = (Hashtable<Integer, DimensionType>) field.get(new DimensionManager());
+					        break;
+						}
+					}
+				}
+			}
+		}
+		catch (SecurityException e)
+		{
+			e.printStackTrace();
+		}
+		catch (IllegalArgumentException e)
+		{
+			e.printStackTrace();
+		}
+		catch (IllegalAccessException e)
+		{
+			e.printStackTrace();
+		}
+		
+		HashMap<Integer, String> otgDims = new HashMap<Integer, String>();
+		
+		for(int i = 2; i < Long.SIZE << 4; i++)
+		{
+			if(dimensions.containsKey(i) && dimensions.get(i).getSuffix().equals("OTG"))
+			{
+				otgDims.put(new Integer(dimensions.get(i).getId()), dimensions.get(i).getName());
+			}
+		}
+		
+		return otgDims;
 	}
 	
 	public static void ReAddTCDims()

@@ -1,15 +1,10 @@
 package com.khorn.terraincontrol.forge;
 
 import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
-
-import org.apache.commons.io.FileUtils;
 
 import com.khorn.terraincontrol.BiomeIds;
 import com.khorn.terraincontrol.LocalBiome;
@@ -17,6 +12,7 @@ import com.khorn.terraincontrol.TerrainControl;
 import com.khorn.terraincontrol.configuration.ServerConfigProvider;
 import com.khorn.terraincontrol.configuration.WorldConfig;
 import com.khorn.terraincontrol.exception.BiomeNotFoundException;
+import com.khorn.terraincontrol.forge.events.PlayerTracker;
 import com.khorn.terraincontrol.forge.util.CommandHelper;
 import com.khorn.terraincontrol.logging.LogMarker;
 
@@ -254,58 +250,15 @@ final class TCCommandHandler implements ICommand
 		            		{
 		            			// First make sure world is unloaded
 		            			  
-		            			if(!((ForgeEngine)TerrainControl.getEngine()).worldLoader.worlds.containsKey(dimName) && ((ForgeEngine)TerrainControl.getEngine()).worldLoader.unloadedWorlds.containsKey(dimName))
+		            			if(((ForgeEngine)TerrainControl.getEngine()).worldLoader.isWorldUnloaded(dimName))
 		            			{
-				            		DimensionManager.setWorld(existingDim, null, server);
-				            		DimensionManager.unregisterDimension(existingDim);
-				            		
-				            		ForgeWorld unloadedWorld = (ForgeWorld) TerrainControl.getUnloadedWorld(dimName);
-				            		unloadedWorld.unRegisterBiomes();				            		
-				            		TCDimensionManager.UnloadCustomDimensionData(existingDim);
-				            		
-				            		BitSet dimensionMap = null;
-				            		try {
-				            			Field[] fields = DimensionManager.class.getDeclaredFields();
-				            			for(Field field : fields)
-				            			{
-				            				Class<?> fieldClass = field.getType();
-				            				if(fieldClass.equals(BitSet.class))
-				            				{
-				            					field.setAccessible(true);
-				            					dimensionMap = (BitSet) field.get(new DimensionManager());
-				            			        break;
-				            				}
-				            			}
-				            		} catch (SecurityException e) {
-				            			// TODO Auto-generated catch block
-				            			e.printStackTrace();
-				            		} catch (IllegalArgumentException e) {
-				            			// TODO Auto-generated catch block
-				            			e.printStackTrace();
-				            		} catch (IllegalAccessException e) {
-				            			// TODO Auto-generated catch block
-				            			e.printStackTrace();
-				            		}
-				            		
-			            			dimensionMap.clear(existingDim);
-				            		
-			        				// This biome was unregistered via a console command, delete its world data
-			        				File dimensionSaveDir = new File(world.getWorld().getSaveHandler().getWorldDirectory() + "/DIM" + existingDim);
-			        				if(dimensionSaveDir.exists() && dimensionSaveDir.isDirectory())
-			        				{
-			        					TerrainControl.log(LogMarker.INFO, "Deleting world save data for dimension " + existingDim);
-			        					try {
-											FileUtils.deleteDirectory(dimensionSaveDir);								
-										} catch (IOException e) {
-											TerrainControl.log(LogMarker.ERROR, "Could not delete directory: " + e.toString());
-											// TODO Auto-generated catch block
-											e.printStackTrace();
-										}
-			        				}
-				            		
-					    			sender.addChatMessage(new TextComponentTranslation(MESSAGE_COLOR + "Deleted dimension " + VALUE_COLOR + dimName + MESSAGE_COLOR + " at id " + VALUE_COLOR + existingDim + MESSAGE_COLOR + "."));
+		            				ForgeWorld forgeWorld = (ForgeWorld) ((ForgeEngine)TerrainControl.getEngine()).getUnloadedWorld(dimName);		            				
+		            				TCDimensionManager.DeleteDimension(existingDim, forgeWorld, server, true);			        			
+		            				
+					    			sender.addChatMessage(new TextComponentTranslation(MESSAGE_COLOR + "Deleted dimension " + VALUE_COLOR + dimName + MESSAGE_COLOR + " at id " + VALUE_COLOR + existingDim + MESSAGE_COLOR + "."));					    		
 					    			
-					    			TCDimensionManager.SaveDimensionData();
+					    			PlayerTracker.SendAllWorldAndBiomeConfigsToAllPlayers(sender.getServer());
+					    			
 		            			} else {
 		        	    			sender.addChatMessage(new TextComponentTranslation(ERROR_COLOR + "Cannot delete dimension " + VALUE_COLOR + dimName + ERROR_COLOR + ", it is currently loaded. Dimensions are unloaded automatically if no players are inside (this may take a minute)."));
 		            			}
@@ -328,6 +281,8 @@ final class TCCommandHandler implements ICommand
 								DimensionManager.unloadWorld(createdWorld.getWorld().provider.getDimension());
 				        		
 				    			sender.addChatMessage(new TextComponentTranslation(MESSAGE_COLOR + "Created dimension " + VALUE_COLOR + dimName + MESSAGE_COLOR + " at id " + VALUE_COLOR + newDimId + MESSAGE_COLOR + "."));
+				    			
+				    			PlayerTracker.SendAllWorldAndBiomeConfigsToAllPlayers(sender.getServer());
 	        				}
 		            	}
 	            	}
@@ -440,7 +395,7 @@ final class TCCommandHandler implements ICommand
 			    			{
 			    				for(SpawnListEntry spawnListEntry : creatureList)
 			    				{
-			    					sender.addChatMessage(new TextComponentTranslation(VALUE_COLOR + "{\"mob\": \"" + spawnListEntry.entityClass.getName() + "\", \"weight\": " + spawnListEntry.itemWeight + ", \"min\": " + spawnListEntry.minGroupCount + ", \"max\": " + spawnListEntry.maxGroupCount + "}"));
+			    					sender.addChatMessage(new TextComponentTranslation(VALUE_COLOR + "{\"mob\": \"" + spawnListEntry.entityClass.getSimpleName() + "\", \"weight\": " + spawnListEntry.itemWeight + ", \"min\": " + spawnListEntry.minGroupCount + ", \"max\": " + spawnListEntry.maxGroupCount + "}"));
 			    				}
 			    			}
 		            	}

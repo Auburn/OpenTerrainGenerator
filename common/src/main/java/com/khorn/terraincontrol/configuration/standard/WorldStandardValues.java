@@ -8,11 +8,13 @@ import com.khorn.terraincontrol.configuration.WorldConfig.ConfigMode;
 import com.khorn.terraincontrol.configuration.WorldConfig.ImageMode;
 import com.khorn.terraincontrol.configuration.WorldConfig.ImageOrientation;
 import com.khorn.terraincontrol.configuration.WorldConfig.TerrainMode;
+import com.khorn.terraincontrol.configuration.settingType.MaterialListSetting;
 import com.khorn.terraincontrol.configuration.settingType.MaterialSetting;
 import com.khorn.terraincontrol.configuration.settingType.Setting;
 import com.khorn.terraincontrol.configuration.settingType.Settings;
 import com.khorn.terraincontrol.util.minecraftTypes.DefaultMaterial;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class WorldStandardValues extends Settings
@@ -130,6 +132,9 @@ public class WorldStandardValues extends Settings
             COOLED_LAVA_BLOCK = new MaterialSetting("CooledLavaBlock", DefaultMaterial.STATIONARY_LAVA),
             BEDROCK_BLOCK = new MaterialSetting("BedrockobBlock", DefaultMaterial.BEDROCK);
 
+    public static final Setting<ArrayList<LocalMaterialData>>
+    		DIMENSION_PORTAL_MATERIALS = new MaterialListSetting("DimensionPortalMaterials", new DefaultMaterial[] { DefaultMaterial.QUARTZ_BLOCK, DefaultMaterial.QUARTZ_STAIRS });
+    
     public static final Setting<List<String>>
             ISLE_BIOMES = stringListSetting("IsleBiomes", "Deep Ocean", "MushroomIsland",
                     "Ice Mountains", "DesertHills", "ForestHills", "Forest", "TaigaHills",
