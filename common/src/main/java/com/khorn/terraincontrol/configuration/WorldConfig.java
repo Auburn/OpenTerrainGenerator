@@ -1081,7 +1081,10 @@ public class WorldConfig extends ConfigFile
         writer.putSetting(WorldStandardValues.DIMENSIONS, this.Dimensions,
                 "Dimensions that should be loaded for this world at world creation (requires DimensionsEnabled: true. A world directory of the same name must be present in mods/OpenTerrainGenerator/worlds/");
         writer.putSetting(WorldStandardValues.DIMENSION_PORTAL_MATERIALS, this.DimensionPortalMaterials,
-                "A comma seperated list of blocks, dimension portals made of one or more of these blocks will lead to this world.");               
+                "A comma seperated list of blocks, dimension portals made of one or more of these blocks will lead to this world.",
+                "For blocks that have rotation such as stairs be sure to add all rotations (0,1,2,3,4,5,6,7), for instance: QUARTZ_STAIRS:0, QUARTZ_STAIRS:1, QUARTZ_STAIRS:2 etc.",
+                "For blocks that have rotation such as QUARTZ_STAIRS, \"QUARTZ_STAIRS\" is the same as \"QUARTZ_STAIRS:3\"."
+        		);
         
         writer.putSetting(WorldStandardValues.CARTOGRAPHER, this.Cartographer,
                 "Currently in development, the Cartographer is a miniature version of the world (1/16th scale) that can be used to view the world (including players) and teleport players and items. Setting this to true loads and updates the Cartographer world map in the Cartographer dimension (does not require DimensionsEnabled: true). The Cartographer can be reached via a Quartz portal with a chiseled quartz base. The mods/OpenTerrainGenerator/worlds/DIM-Cartographer directory must be present (if you also have OTG-Cartographer.jar in your mods directory worlds/DIM-Cartographer should be created automatically).");

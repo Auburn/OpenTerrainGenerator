@@ -1021,7 +1021,9 @@ public class BukkitWorld implements LocalWorld
 		}
 		
 		Entity entityLiving = getEntity(entityType.getEntityClass());	
-		org.bukkit.entity.Entity bukkitEntityLiving = entityLiving.getBukkitEntity();	
+		org.bukkit.entity.Entity bukkitEntityLiving = entityLiving.getBukkitEntity();
+		        
+		boolean isWaterMob = bukkitEntityLiving instanceof CraftGuardian;
 		
         if(entityLiving != null)
         {       	
@@ -1032,10 +1034,10 @@ public class BukkitWorld implements LocalWorld
 				bukkitEntityLiving instanceof CraftComplexLivingEntity || // Dragon			
 				bukkitEntityLiving instanceof CraftSlime || // Slime/Magma
 				bukkitEntityLiving instanceof CraftMonster ||
-				bukkitEntityLiving instanceof CraftFlying // Ghast			
+				bukkitEntityLiving instanceof CraftFlying // Ghast
 			)
 			{
-				creatureType = EnumCreatureType.CREATURE;
+				creatureType = EnumCreatureType.MONSTER;
 			}
 			
 			// AMBIENT
@@ -1081,18 +1083,16 @@ public class BukkitWorld implements LocalWorld
             boolean canProvidePower = block.isBlockPowered();
             boolean isBlockNormalCube = !isOutsideBuildHeight && isOpaque && isFullCube && !canProvidePower;
                         
-            boolean isWaterMob = bukkitEntityLiving instanceof CraftGuardian;
-            
-            if (!isBlockNormalCube && (((creatureType == EnumCreatureType.WATER_CREATURE || isWaterMob) && material == org.bukkit.Material.WATER) || material == org.bukkit.Material.AIR))
-            {					                            						                            	                                  			                                    	
+            if (!isBlockNormalCube && (((creatureType == EnumCreatureType.WATER_CREATURE || isWaterMob) && (material == org.bukkit.Material.WATER || material == org.bukkit.Material.STATIONARY_WATER)) || material == org.bukkit.Material.AIR))
+            {           	
 	            float f = (float)j1 + 0.5F;
 	            float f1 = (float)k1;
 	            float f2 = (float)l1 + 0.5F;                              
 	           
 	            if(entityLiving instanceof EntityLiving)
-	            {	
+	            {
 	            	for(int r = 0; r < groupSize; r++)
-	            	{  	
+	            	{ 
             			CraftEntity entity = (CraftEntity) world.getWorld().spawn(new Location(world.getWorld(), (double)f, (double)f1, (double)f2, rand.nextFloat() * 360.0F, 0.0F), entityType.getEntityClass());
 	            			            		            			            			
 	            		if(entityData.nameTagOrNBTFileName != null && (entityData.nameTagOrNBTFileName.toLowerCase().trim().endsWith(".txt") || entityData.nameTagOrNBTFileName.toLowerCase().trim().endsWith(".nbt")))
@@ -1107,13 +1107,13 @@ public class BukkitWorld implements LocalWorld
 	            				entity.setCustomName(nameTag);
 	        				}
 	            		}
-	            			            		
+	            		
 	            		if(entity instanceof CraftLivingEntity)
 	            		{
 	            			((CraftLivingEntity) entity).setRemoveWhenFarAway(false); // <- makes sure mobs don't de-spawn
 	            		}
 	            	}
-	            } else {                    					                                                						                                                                                    					                                                
+	            } else { 
 	            	for(int r = 0; r < groupSize; r++)
 	            	{                                    		
 	            		CraftEntity entity = (CraftEntity) world.getWorld().spawn(new Location(world.getWorld(), (double)f, (double)f1, (double)f2, rand.nextFloat() * 360.0F, 0.0F), entityType.getEntityClass());
@@ -1449,6 +1449,8 @@ public class BukkitWorld implements LocalWorld
 				}
 			}
 		}
+		
+		//TODO: Does this need to be re-enabled??
 		/*
 		else if (org.bukkit.entity.Hanging.class.isAssignableFrom(clazz))
 		{

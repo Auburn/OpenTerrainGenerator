@@ -133,7 +133,7 @@ public class WorldStandardValues extends Settings
             BEDROCK_BLOCK = new MaterialSetting("BedrockobBlock", DefaultMaterial.BEDROCK);
 
     public static final Setting<ArrayList<LocalMaterialData>>
-    		DIMENSION_PORTAL_MATERIALS = new MaterialListSetting("DimensionPortalMaterials", new DefaultMaterial[] { DefaultMaterial.QUARTZ_BLOCK, DefaultMaterial.QUARTZ_STAIRS });
+    		DIMENSION_PORTAL_MATERIALS = new MaterialListSetting("DimensionPortalMaterials", new DefaultMaterial[] { DefaultMaterial.QUARTZ_BLOCK });
     
     public static final Setting<List<String>>
             ISLE_BIOMES = stringListSetting("IsleBiomes", "Deep Ocean", "MushroomIsland",
