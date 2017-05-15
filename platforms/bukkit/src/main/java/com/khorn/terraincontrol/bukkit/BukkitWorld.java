@@ -1006,13 +1006,18 @@ public class BukkitWorld implements LocalWorld
 
 		EntityType entityType;
 		try
-		{
-			entityType = EntityType.valueOf(mobTypeName.toUpperCase());	    		
+		{			
+			entityType = EntityType.valueOf(mobTypeName.toUpperCase());
 		}
 		catch(IllegalArgumentException ex)
 		{
-			TerrainControl.log(LogMarker.WARN, "Could not find entity: " + mobTypeName);
-			return;
+			entityType = EntityType.fromName(mobTypeName);
+			
+			if(entityType == null)
+			{
+				TerrainControl.log(LogMarker.WARN, "Could not find entity: " + mobTypeName);
+				return;
+			}
 		}
 
 		if (entityType == EntityType.PLAYER)

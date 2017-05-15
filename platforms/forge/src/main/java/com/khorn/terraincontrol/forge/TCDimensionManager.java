@@ -361,7 +361,7 @@ public class TCDimensionManager
 		{				
 			DimensionType dimType = DimensionManager.getProviderType(dimId);
 			
-			if(dimType != null && dimType.getSuffix().equals("OTG"))
+			if(dimType != null && dimType.getSuffix() != null && dimType.getSuffix().equals("OTG"))
 			{
 				DimensionManager.unregisterDimension(dimId);
 				dimensionMap.clear(dimId);
