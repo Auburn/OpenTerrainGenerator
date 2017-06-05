@@ -138,6 +138,10 @@ public class StandardBiomeTemplate
         resources.add(Resource.createResource(config, SmallLakeGen.class, DefaultMaterial.LAVA, SmallLakeLavaFrequency,
                 SmallLakeLavaRarity, SmallLakeMinAltitude, SmallLakeMaxAltitude));
 
+        // Small underground lava lakes
+        resources.add(Resource.createResource(config, SmallLakeGen.class, DefaultMaterial.LAVA, SmallLakeLavaFrequency2,
+                SmallLakeLavaRarity2, SmallLakeMinAltitude2, SmallLakeMaxAltitude2));        
+        
         // Underground lakes
         resources.add(Resource
                 .createResource(config, UndergroundLakeGen.class, undergroundLakeMinSize, undergroundLakeMaxSize, undergroundLakeFrequency,

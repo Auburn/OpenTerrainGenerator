@@ -28,7 +28,7 @@ public class ForgeMaterialData implements LocalMaterialData
         if (block != null)
         {
             return ForgeMaterialData.ofMinecraftBlock(block);
-        }
+        }        
         
         try
         {

@@ -15,9 +15,9 @@ import java.util.ArrayList;
 public class BukkitEngine extends TerrainControlEngine
 {
 
-    private final TCPlugin plugin;
+    private final TXPlugin plugin;
 
-    public BukkitEngine(TCPlugin plugin)
+    public BukkitEngine(TXPlugin plugin)
     {
         super(new BukkitLogger(plugin.getLogger()));
         this.plugin = plugin;

@@ -8,10 +8,10 @@ import com.khorn.terraincontrol.configuration.ClientConfigProvider;
 import com.khorn.terraincontrol.configuration.ConfigFile;
 import com.khorn.terraincontrol.configuration.ServerConfigProvider;
 import com.khorn.terraincontrol.customobjects.CustomObjectCollection;
-import com.khorn.terraincontrol.forge.generator.BiomeGenCustom;
+import com.khorn.terraincontrol.forge.generator.TXBiome;
 import com.khorn.terraincontrol.forge.gui.GuiHandler;
-import com.khorn.terraincontrol.forge.gui.TCGuiCreateWorld;
-import com.khorn.terraincontrol.forge.gui.TCGuiWorldSelection;
+import com.khorn.terraincontrol.forge.gui.TXGuiCreateWorld;
+import com.khorn.terraincontrol.forge.gui.TXGuiWorldSelection;
 import com.khorn.terraincontrol.forge.util.WorldHelper;
 import com.khorn.terraincontrol.logging.LogMarker;
 import com.khorn.terraincontrol.util.minecraftTypes.DefaultBiome;
@@ -252,7 +252,7 @@ public final class WorldLoader
     @Nullable
     public ForgeWorld getOrCreateForgeWorld(World mcWorld)
     {
-    	if(!(mcWorld.getWorldInfo().getTerrainType() instanceof TCWorldType))
+    	if(!(mcWorld.getWorldInfo().getTerrainType() instanceof TXWorldType))
     	{
     		throw new RuntimeException("Whatever it is you're trying to do, we didn't write any code for it (sorry). Please contact Team OTG about this crash.");
     	}
@@ -313,7 +313,7 @@ public final class WorldLoader
                     Map.Entry<ResourceLocation, Biome> mapEntry = iterator.next();
                     Biome biome = mapEntry.getValue();
                     int biomeId = Biome.getIdForBiome(biome);
-                    if (biomeId == BiomeGenCustom.MAX_TC_BIOME_ID)
+                    if (biomeId == TXBiome.MAX_TC_BIOME_ID)
                     {
                         iterator.remove();
                     }
@@ -324,7 +324,7 @@ public final class WorldLoader
                 {
                     Biome biome = biomeIterator.next();
                     int biomeId = Biome.getIdForBiome(biome);
-                    if (biomeId == BiomeGenCustom.MAX_TC_BIOME_ID)
+                    if (biomeId == TXBiome.MAX_TC_BIOME_ID)
                     {
                         continue; // TODO: Won't this cause an infinite loop? Should be break;?
                     }
@@ -353,7 +353,7 @@ public final class WorldLoader
     private void applyWorldCreationMenuSettings(ServerConfigProvider config)
     {
         // If this is a new world use the pre-generator and world border settings from world creation menu
-    	if(GuiHandler.lastGuiOpened.equals(TCGuiCreateWorld.class))
+    	if(GuiHandler.lastGuiOpened.equals(TXGuiCreateWorld.class))
     	{
 			if(((ForgeEngine)TerrainControl.getEngine()).getPregenerator().getPregenerationRadius() > -1)
 			{
@@ -365,7 +365,7 @@ public final class WorldLoader
 			}
 			config.saveWorldConfig();
     	}
-    	else if(GuiHandler.lastGuiOpened.equals(TCGuiWorldSelection.class))
+    	else if(GuiHandler.lastGuiOpened.equals(TXGuiWorldSelection.class))
     	{
     		((ForgeEngine)TerrainControl.getEngine()).WorldBorderRadius = config.getWorldConfig().WorldBorderRadius;
     	}
@@ -454,6 +454,12 @@ public final class WorldLoader
 		// Unregister default biomes so they can be replaced by TC biomes (this allows us to fully customise the biomes)
 		for(DefaultBiome defaultBiome : DefaultBiome.values())
 		{ 			
+			//String a = defaultBiome != null ? defaultBiome.getClass().toString() : "null";
+			//String b = defaultBiome != null ? defaultBiome.Name : "null";
+			//String c = defaultBiome != null ? defaultBiome.Id + "" : "null";
+
+			//TerrainControl.log(LogMarker.INFO, "Unregistering default biome " + b + ":" + c + " " + a);
+
 			// Make an exception for the hell and sky biomes. 
 			// The hell and end chunk providers refer specifically to 
 			// Biomes.HELL and Biomes.SKY and query the biome registry
@@ -558,7 +564,7 @@ public final class WorldLoader
     {  
         // Dimension info
     	int worldCount = wrappedStream.readInt();
-    	HashMap<Integer, String> dimsToRemove = TCDimensionManager.GetAllOTGDimensions(); // TODO: use String[] instead?
+    	HashMap<Integer, String> dimsToRemove = TXDimensionManager.GetAllOTGDimensions(); // TODO: use String[] instead?
     	boolean isSinglePlayer = Minecraft.getMinecraft().isSingleplayer();
     	for(int i = 0; i < worldCount; i++)
     	{    		
@@ -595,7 +601,7 @@ public final class WorldLoader
     		{    			
 	    		if(i != 0)
 	    		{
-	    			DimensionManager.registerDimension(dimensionId, DimensionType.register(worldName, "OTG", dimensionId, WorldProviderTC.class, false));
+	    			DimensionManager.registerDimension(dimensionId, DimensionType.register(worldName, "OTG", dimensionId, WorldProviderTX.class, false));
 	    		}
 	    		    		
 	            ForgeWorld world = new ForgeWorld(worldName, dimensionId == 0);
@@ -655,7 +661,7 @@ public final class WorldLoader
     			forgeWorld = (ForgeWorld) ((ForgeEngine)TerrainControl.getEngine()).getWorld(removedDim.getValue()); // This can happen because the client considers all worlds loaded when it receives them from the server.
     		}
     		
-    		TCDimensionManager.DeleteDimension(removedDim.getKey(), forgeWorld, Minecraft.getMinecraft().thePlayer.getServer(), false);
+    		TXDimensionManager.DeleteDimension(removedDim.getKey(), forgeWorld, Minecraft.getMinecraft().thePlayer.getServer(), false);
     	}
     }
 }

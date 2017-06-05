@@ -30,9 +30,9 @@ public class TerrainControl
     private static TerrainControlEngine engine;
 
     /**
-     * The amount of different block ids that are supported. 4096 on Minecraft.
+     * The amount of different block ids that are supported. 4096 on Minecraft. 65535 with NotEnoughId's mod 
      */
-    public static final int SUPPORTED_BLOCK_IDS = 4096;
+    public static final int SUPPORTED_BLOCK_IDS = 65535;//4096; // TODO: Test if this creates lag
 
     /**
      * The world depth that the engine supports. Not the actual depth the

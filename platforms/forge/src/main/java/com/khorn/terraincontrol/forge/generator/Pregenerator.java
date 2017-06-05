@@ -28,7 +28,7 @@ import com.khorn.terraincontrol.TerrainControl;
 import com.khorn.terraincontrol.configuration.ConfigProvider;
 import com.khorn.terraincontrol.configuration.WorldConfig;
 import com.khorn.terraincontrol.forge.ForgeEngine;
-import com.khorn.terraincontrol.forge.TCWorldType;
+import com.khorn.terraincontrol.forge.TXWorldType;
 import com.khorn.terraincontrol.logging.LogMarker;
 import com.khorn.terraincontrol.util.ChunkCoordinate;
 
@@ -143,7 +143,7 @@ public class Pregenerator
 			MinecraftServer mcServer = FMLCommonHandler.instance().getMinecraftServerInstance();			
 			for(WorldServer worldServer : mcServer.worldServers)
 			{
-				if(worldServer.getWorldInfo().getTerrainType() instanceof TCWorldType && worldServer.provider.getDimension() == 0)
+				if(worldServer.getWorldInfo().getTerrainType() instanceof TXWorldType && worldServer.provider.getDimension() == 0)
 				{					
 					LocalWorld world = ((ForgeEngine)TerrainControl.getEngine()).getWorld(worldServer);				
 					

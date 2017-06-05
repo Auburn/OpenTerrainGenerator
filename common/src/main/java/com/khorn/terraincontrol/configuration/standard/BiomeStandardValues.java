@@ -133,6 +133,11 @@ public class BiomeStandardValues extends Settings
     public static final int SmallLakeMinAltitude = 8;
     public static final int SmallLakeMaxAltitude = 119;
 
+    public static final int SmallLakeLavaFrequency2 = 2;
+    public static final int SmallLakeLavaRarity2 = 8;
+    public static final int SmallLakeMinAltitude2 = 6;
+    public static final int SmallLakeMaxAltitude2 = 50;
+
     public static final int undergroundLakeFrequency = 2;
     public static final int undergroundLakeRarity = 5;
     public static final int undergroundLakeMinSize = 50;

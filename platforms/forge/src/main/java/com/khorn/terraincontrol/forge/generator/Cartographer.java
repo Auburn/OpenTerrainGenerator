@@ -39,8 +39,8 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import com.khorn.terraincontrol.LocalMaterialData;
 import com.khorn.terraincontrol.TerrainControl;
 import com.khorn.terraincontrol.forge.ForgeWorld;
-import com.khorn.terraincontrol.forge.TCDimensionManager;
-import com.khorn.terraincontrol.forge.TCWorldType;
+import com.khorn.terraincontrol.forge.TXDimensionManager;
+import com.khorn.terraincontrol.forge.TXWorldType;
 import com.khorn.terraincontrol.util.ChunkCoordinate;
 import com.khorn.terraincontrol.util.NamedBinaryTag;
 import com.khorn.terraincontrol.util.NamedBinaryTag.Type;
@@ -57,7 +57,7 @@ public class Cartographer
 	public static void UpdateWorldMap()
 	{	
 		WorldServer worldServer = DimensionManager.getWorld(0);
-		if(((ForgeEngine)TerrainControl.getEngine()).getCartographerEnabled() && worldServer.getWorldInfo().getTerrainType() instanceof TCWorldType)
+		if(((ForgeEngine)TerrainControl.getEngine()).getCartographerEnabled() && worldServer.getWorldInfo().getTerrainType() instanceof TXWorldType)
 		{		
 			if(System.currentTimeMillis() - lastUpdateTime > 1000) // Once per second
 			{
@@ -278,7 +278,7 @@ public class Cartographer
 		// Check existing portals, players and spawn
 
 		WorldServer overWorldServer = DimensionManager.getWorld(0);
-		if(!(overWorldServer.getWorldInfo().getTerrainType() instanceof TCWorldType))
+		if(!(overWorldServer.getWorldInfo().getTerrainType() instanceof TXWorldType))
 		{
 			return false;
 		}
@@ -308,9 +308,9 @@ public class Cartographer
     				entity.setPositionAndUpdate(newX, newY, newZ);
     				if(entity instanceof EntityPlayerMP)
     				{
-    					TCTeleporter.changeDimension(0, (EntityPlayerMP)entity);
+    					TXTeleporter.changeDimension(0, (EntityPlayerMP)entity);
 					} else {
-						TCTeleporter.changeDimension(0, entity);
+						TXTeleporter.changeDimension(0, entity);
     				}
     			}
     		}
@@ -351,9 +351,9 @@ public class Cartographer
 			entity.setPositionAndUpdate(newX, newY, newZ);
 			if(entity instanceof EntityPlayerMP)
 			{
-				TCTeleporter.changeDimension(0, (EntityPlayerMP)entity);
+				TXTeleporter.changeDimension(0, (EntityPlayerMP)entity);
 			} else {
-				TCTeleporter.changeDimension(0, entity);
+				TXTeleporter.changeDimension(0, entity);
 			}
 			return true;
 		}
@@ -388,9 +388,9 @@ public class Cartographer
 			entity.setPositionAndUpdate(newX, newY, newZ);
 			if(entity instanceof EntityPlayerMP)
 			{
-				TCTeleporter.changeDimension(0, (EntityPlayerMP)entity);
+				TXTeleporter.changeDimension(0, (EntityPlayerMP)entity);
 			} else {
-				TCTeleporter.changeDimension(0, entity);
+				TXTeleporter.changeDimension(0, entity);
 			}
 			return true;
 		}
@@ -405,7 +405,7 @@ public class Cartographer
     public static void CreateBlockWorldMapAtSpawn(ChunkCoordinate chunkCoord, boolean unloading)
     {
 		WorldServer worldServer = DimensionManager.getWorld(0);
-		if(worldServer.getWorldInfo().getTerrainType() instanceof TCWorldType)
+		if(worldServer.getWorldInfo().getTerrainType() instanceof TXWorldType)
 		{		
 			ForgeWorld world = (ForgeWorld)((ForgeEngine)TerrainControl.getEngine()).getWorld(worldServer);
     	  	
@@ -1165,9 +1165,9 @@ public class Cartographer
 
 	public static void CreateCartographerDimension()
 	{
-    	if(((ForgeEngine)TerrainControl.getEngine()).getCartographerEnabled() && !TCDimensionManager.isDimensionNameRegistered("DIM-Cartographer"))
+    	if(((ForgeEngine)TerrainControl.getEngine()).getCartographerEnabled() && !TXDimensionManager.isDimensionNameRegistered("DIM-Cartographer"))
     	{
-    		CartographerDimension = TCDimensionManager.createDimension("DIM-Cartographer", false, true, false);
+    		CartographerDimension = TXDimensionManager.createDimension("DIM-Cartographer", false, true, false);
 
     		ForgeWorld world = (ForgeWorld) TerrainControl.getWorld("DIM-Cartographer");
     		
@@ -1179,7 +1179,7 @@ public class Cartographer
 			world.getWorld().getGameRules().setOrCreateGameRule("randomTickSpeed", "0");
 			world.getWorld().getGameRules().setOrCreateGameRule("spawnRadius", "0");
 			world.getWorld().getGameRules().setOrCreateGameRule("doWeatherCycle", "false");
-			world.getWorld().getGameRules().setOrCreateGameRule("falldamage", "false");			
+			world.getWorld().getGameRules().setOrCreateGameRule("falldamage", "false");
     	}
 	}
 }

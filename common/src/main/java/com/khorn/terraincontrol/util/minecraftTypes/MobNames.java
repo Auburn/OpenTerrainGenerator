@@ -10,40 +10,40 @@ import java.util.Map;
  */
 public enum MobNames
 {
-    BAT("Bat", "bat"),
-    BLAZE("Blaze", "blaze"),
-    CAVE_SPIDER("CaveSpider", "cavespider", "cave_spider"),
-    CHICKEN("Chicken", "chicken"),
-    COW("Cow", "cow"),
-    CREEPER("Creeper", "creeper"),
-    ENDER_DRAGON("EnderDragon", "enderdragon", "ender_dragon"),
-    ENDERMAN("Enderman", "enderman"),
-    ENDERMITE("Endermite", "endermite"),
-    GHAST("Ghast", "ghast"),
-    GIANT("Giant", "giant", "giantzombie", "zombiegiant"),
-    GUARDIAN("Guardian", "guardian"),
-    HORSE("EntityHorse", "Horse", "horse"),
-    IRON_GOLEM("VillagerGolem", "villagergolem", "villager_golem", "IronGolem", "irongolem", "iron_golem"),
-    MAGMA_CUBE("LavaSlime", "lavaslime", "lava_slime", "magmacube", "magma_cube"),
-    MUSHROOM_COW("MushroomCow", "mushroomcow", "shroom", "mooshroom", "moshoom", "mcow", "shroomcow"),
-    OCELOT("Ozelot", "ozelot", "Ocelot", "ocelot"),
-    PIG("Pig", "pig"),
-    PIG_ZOMBIE("PigZombie", "pigzombie", "pig_zombie"),
-    POLAR_BEAR("PolarBear", "polarbear", "polar_bear"),
-    RABBIT("Rabbit", "rabbit"),
-    SHEEP("Sheep", "sheep"),
-    SILVERFISH("Silverfish", "silverfish", "silver_fish"),
-    SHULKER("Shulker", "shulker"),
-    SKELETON("Skeleton", "skeleton"),
-    SLIME("Slime", "slime"),
-    SNOWMAN("SnowMan", "snowman"),
-    SPIDER("Spider", "spider"),
-    SQUID("Squid", "squid"),
-    VILLAGER("Villager", "villager"),
-    WITCH("Witch", "witch"),
-    WITHER("WitherBoss", "witherboss", "wither_boss", "Wither", "wither"),
-    WOLF("Wolf", "wolf"),
-    ZOMBIE("Zombie", "zombie");
+	BAT("Bat", "bat"),
+	BLAZE("Blaze", "blaze"),
+	CAVESPIDER("CaveSpider", "cavespider"),	
+	CHICKEN("Chicken", "chicken"),
+	COW("Cow", "cow"),
+	CREEPER("Creeper", "creeper"),
+	ENTITYHORSE("EntityHorse", "horse"),
+	ENDERDRAGON("EnderDragon", "enderdragon"),
+	ENDERMAN("Enderman", "enderman"),
+	ENDERMITE("Endermite", "endermite"),
+	GHAST("Ghast", "ghast"),
+	GIANT("Giant", "giant", "giantzombie", "zombiegiant"),
+	GUARDIAN("Guardian", "guardian"),
+	LAVASLIME("LavaSlime", "magmaslime", "lavaslime", "magmacube"),
+	MUSHROOMCOW("MushroomCow", "mushroomcow", "mooshroom"),
+	OZELOT("Ozelot", "ozelot", "ocelot"),
+	PIG("Pig", "pig"),
+	PIGZOMBIE("PigZombie", "pigzombie", "zombiepigman"),
+	POLARBEAR("PolarBear", "polarbear"),
+	RABBIT("Rabbit", "rabbit"),
+	SHEEP("Sheep", "sheep"),
+	SHULKER("Shulker", "shulker"),
+	SILVERFISH("Silverfish", "silverfish"),
+	SKELETON("Skeleton", "skeleton"),	
+	SLIME("Slime", "slime"),
+	SNOWMAN("SnowMan", "snowman"),
+	SPIDER("Spider", "spider"),
+	SQUID("Squid", "squid"),
+	VILLAGER("Villager", "villager"),
+	VILLAGERGOLEM("VillagerGolem", "villagergolem", "irongolem"),
+	WITCH("Witch", "witch"),
+	WITHERBOSS("WitherBoss", "witherboss", "wither"),
+	WOLF("Wolf", "wolf"),
+	ZOMBIE("Zombie", "zombie");
 
     // Contains all aliases (alias, internalName)
     private static Map<String, String> mobAliases = new HashMap<String, String>();
@@ -66,10 +66,14 @@ public enum MobNames
      */
     public static String toInternalName(String alias)
     {
-        if (mobAliases.containsKey(alias))
-        {
-            return mobAliases.get(alias);
-        }
+    	for(String key : mobAliases.keySet())
+    	{
+    		if(key.toLowerCase().trim().replace("entity","").replace("_","").equals(alias.toLowerCase().trim().replace("entity","").replace("_","")))
+    		{
+    			return mobAliases.get(key);
+    		}
+    	}
+    	
         return alias;
     }
 

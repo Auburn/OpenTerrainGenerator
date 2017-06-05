@@ -54,7 +54,12 @@ public class WorldStandardValues extends Settings
             AUTHOR = stringSetting("Author", "Unknown"),
             DESCRIPTION = stringSetting("Description", "No description given"),
     		WORLD_SEED = stringSetting("WorldSeed", ""),
-			BO3_AT_SPAWN = stringSetting("BO3AtSpawn", "")
+			BO3_AT_SPAWN = stringSetting("BO3AtSpawn", ""),
+    		DIMENSIONBELOW = stringSetting("DimensionBelow", ""),
+    		DIMENSIONABOVE = stringSetting("DimensionAbove", ""),
+    		
+			welcomeMessage = stringSetting("WelcomeMessage", ""),
+			departMessage = stringSetting("DepartMessage", "")
     		;
 
     public static final Setting<Integer>
@@ -98,7 +103,13 @@ public class WorldStandardValues extends Settings
             OCEAN_MONUMENT_RANDOM_OFFSET = intSetting("OceanMonumentRandomOffset", 26, 0, 10000),
             MAXIMUM_CUSTOM_STRUCTURE_RADIUS = intSetting("MaximumCustomStructureRadius", 5, 1, 100),
             PREGENERATION_RADIUS = intSetting("PreGenerationRadius", 0, 0, 999999),            		
-            WORLD_BORDER_RADIUS = intSetting("WorldBorderRadius", 0, 0, 999999);
+            WORLD_BORDER_RADIUS = intSetting("WorldBorderRadius", 0, 0, 999999),
+            
+    		maxEntityCramming = intSetting("MaxEntityCramming", 24, 0, 999999),
+			randomTickSpeed = intSetting("RandomTickSpeed", 3, 0, 999999),
+			spawnRadius = intSetting("SpawnRadius", 10, 0, 999999),
+			cloudHeight = intSetting("CloudHeight", 128, 0, 999999)
+            ;
 
     public static final Setting<Boolean>
             RIVERS_ENABLED = booleanSetting("RiversEnabled", true),
@@ -123,7 +134,37 @@ public class WorldStandardValues extends Settings
             OCEAN_MONUMENTS_ENABLED = booleanSetting("OceanMonumentsEnabled", true),
             POPULATE_USING_SAVED_BIOMES = booleanSetting("PopulateUsingSavedBiomes", false),            
     		CARTOGRAPHER = booleanSetting("Cartographer", false),
-			DIMENSIONSENABLED = booleanSetting("DimensionsEnabled", false)
+    		
+			commandBlockOutput = booleanSetting("CommandBlockOutput", true),
+			disableElytraMovementCheck = booleanSetting("DisableElytraMovementCheck", false),
+			doDaylightCycle = booleanSetting("DoDaylightCycle", true),
+			doEntityDrops = booleanSetting("DoEntityDrops", true),
+			doFireTick = booleanSetting("DoFireTick", true),
+			doMobLoot = booleanSetting("DoMobLoot", true),
+			doMobSpawning = booleanSetting("DoMobSpawning", true),
+			doTileDrops = booleanSetting("DoTileDrops", true),
+			doWeatherCycle = booleanSetting("DoWeatherCycle", true),
+			keepInventory = booleanSetting("KeepInventory", false),
+			logAdminCommands = booleanSetting("LogAdminCommands", true),
+			mobGriefing = booleanSetting("MobGriefing", true),
+			naturalRegeneration = booleanSetting("NaturalRegeneration", true),
+			reducedDebugInfo = booleanSetting("ReducedDebugInfo", false),
+			sendCommandFeedback = booleanSetting("SendCommandFeedback", true),
+			showDeathMessages = booleanSetting("ShowDeathMessages", true),
+			spectatorsGenerateChunks = booleanSetting("SpectatorsGenerateChunks", true),
+			hasNoSky = booleanSetting("HasNoSky", false),
+			isSurfaceWorld = booleanSetting("IsSurfaceWorld", true),
+			canCoordinateBeSpawn = booleanSetting("CanCoordinateBeSpawn", false),
+			canRespawnHere = booleanSetting("CanRespawnHere", true),
+			doesWaterVaporize = booleanSetting("DoesWaterVaporize", false),
+			doesXZShowFog = booleanSetting("DoesXZShowFog", false),
+			isSkyColored = booleanSetting("IsSkyColored", true),
+			canDoLightning = booleanSetting("CanDoLightning", true),
+			canDoRainSnowIce = booleanSetting("CanDoRainSnowIce", true),
+			isNightWorld = booleanSetting("IsNightWorld", false),
+			shouldMapSpin = booleanSetting("ShouldMapSpin", false),
+			canDropChunk = booleanSetting("CanDropChunk", true),
+			useCustomFogColor = booleanSetting("UseCustomFogColor", false)
             ;
 
     public static final Setting<LocalMaterialData>
@@ -157,7 +198,13 @@ public class WorldStandardValues extends Settings
             CANYON_DEPTH = doubleSetting("CanyonDepth", 3, 0.1, 15),
             FRACTURE_HORIZONTAL = doubleSetting("FractureHorizontal", 0, -500, 500),
             FRACTURE_VERTICAL = doubleSetting("FractureVertical", 0, -500, 500),
-            STRONGHOLD_DISTANCE = doubleSetting("StrongholdDistance", 32, 1, 1000);
+            STRONGHOLD_DISTANCE = doubleSetting("StrongholdDistance", 32, 1, 1000),
+            
+    		fogColorRed = doubleSetting("FogColorRed", 0.20000000298023224D, Double.MIN_VALUE, Double.MAX_VALUE),
+			fogColorGreen = doubleSetting("FogColorGreen", 0.029999999329447746D, Double.MIN_VALUE, Double.MAX_VALUE),
+			fogColorBlue = doubleSetting("FogColorBlue", 0.029999999329447746D, Double.MIN_VALUE, Double.MAX_VALUE),
+			voidFogYFactor = doubleSetting("VoidFogYFactor", 0.03125D, Double.MIN_VALUE, Double.MAX_VALUE)
+            ;
 
     public static final Setting<Integer>
             WORLD_FOG = colorSetting("WorldFog", "0xC0D8FF"),

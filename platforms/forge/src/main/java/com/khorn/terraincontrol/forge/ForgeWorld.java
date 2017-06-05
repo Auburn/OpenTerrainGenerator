@@ -9,8 +9,8 @@ import com.khorn.terraincontrol.configuration.standard.MojangSettings.EntityCate
 import com.khorn.terraincontrol.customobjects.CustomObjectStructureCache;
 import com.khorn.terraincontrol.customobjects.bo3.EntityFunction;
 import com.khorn.terraincontrol.exception.BiomeNotFoundException;
-import com.khorn.terraincontrol.forge.generator.BiomeGenCustom;
-import com.khorn.terraincontrol.forge.generator.ChunkProvider;
+import com.khorn.terraincontrol.forge.generator.TXBiome;
+import com.khorn.terraincontrol.forge.generator.TXChunkGenerator;
 import com.khorn.terraincontrol.forge.generator.structure.*;
 import com.khorn.terraincontrol.forge.util.MobSpawnGroupHelper;
 import com.khorn.terraincontrol.forge.util.NBTHelper;
@@ -72,7 +72,7 @@ public class ForgeWorld implements LocalWorld
 {
 	public int clientDimensionId = 0;
 	
-    private ChunkProvider generator;
+    private TXChunkGenerator generator;
     public World world;
     private ConfigProvider settings;
     private CustomObjectStructureCache structureCache;
@@ -87,12 +87,12 @@ public class ForgeWorld implements LocalWorld
 
     public HashMap<String, LocalBiome> biomeNames = new HashMap<String, LocalBiome>();
 
-    public StrongholdGen strongholdGen;
-    public VillageGen villageGen;
-    public MineshaftGen mineshaftGen;
-    public RareBuildingGen rareBuildingGen;
-    public NetherFortressGen netherFortressGen;
-    public OceanMonumentGen oceanMonumentGen;
+    public TXStrongholdGen strongholdGen;
+    public TXVillageGen villageGen;
+    public TXMineshaftGen mineshaftGen;
+    public TXRareBuildingGen rareBuildingGen;
+    public TXNetherFortressGen netherFortressGen;
+    public TXOceanMonumentGen oceanMonumentGen;
 
     private WorldGenDungeons dungeonGen;
     private WorldGenFossils fossilGen;
@@ -139,7 +139,7 @@ public class ForgeWorld implements LocalWorld
         	// (unloading dimensions while their worlds were still ticking etc)
         	// Unload all world and biomes here instead.
         	
-        	TCDimensionManager.UnloadAllCustomDimensionData();       	
+        	TXDimensionManager.UnloadAllCustomDimensionData();       	
         	((ForgeEngine)TerrainControl.getEngine()).worldLoader.unloadAllWorlds();       	
 	        // Clear the BiomeDictionary (it will be refilled when biomes are loaded in createBiomeFor)
 	    	((ForgeEngine)TerrainControl.getEngine()).worldLoader.clearBiomeDictionary(null);	    	
@@ -148,7 +148,7 @@ public class ForgeWorld implements LocalWorld
 	    		        
 	    	//TCDimensionManager.LoadCustomDimensionData();
 
-	    	TCDimensionManager.RemoveTCDims();
+	    	TXDimensionManager.RemoveTCDims();
         }
     }
           
@@ -184,13 +184,13 @@ public class ForgeWorld implements LocalWorld
 		}
     	if(biomeConfig.getName().equals("The Void"))
     	{
-    		ForgeBiome forgeBiome = new ForgeBiome(Biomes.VOID, biomeConfig, new BiomeIds(9,9));
+    		ForgeBiome forgeBiome = new ForgeBiome(Biomes.VOID, biomeConfig, new BiomeIds(127,127));
     		this.biomeNames.put("The Void", forgeBiome);            
     		return forgeBiome;
 		}
     	
     	ForgeBiome forgeBiome = (ForgeBiome)TerrainControl.getBiomeAllWorlds(biomeConfig.getName());
-    	Biome biome = BiomeGenCustom.getOrCreateBiome(biomeConfig, biomeIds, isMainWorld);
+    	Biome biome = TXBiome.getOrCreateBiome(biomeConfig, biomeIds, isMainWorld);
     	
     	if(forgeBiome == null)
     	{
@@ -240,7 +240,8 @@ public class ForgeWorld implements LocalWorld
             // For forge make sure all dimensions are queried since the biome we're looking for may be owned by another dimension
         	if(replaceToBiome == null)
         	{
-        		replaceToBiome = TerrainControl.getBiomeAllWorlds(Biome.getIdForBiome(sourceBiome != null ? sourceBiome : biome));
+        		int replaceToBiomeId = Biome.getIdForBiome(sourceBiome != null ? sourceBiome : biome);
+        		replaceToBiome = TerrainControl.getBiomeAllWorlds(replaceToBiomeId);
         	}
     		if(replaceToBiome != null && replaceToBiome.getBiomeConfig().biomeDictId != null)
     		{
@@ -256,6 +257,12 @@ public class ForgeWorld implements LocalWorld
         
     	Type[] typeArr = new Type[types.size()];
 		types.toArray(typeArr);
+		
+		if(Biome.REGISTRY.getNameForObject(biome) == null)
+		{
+			TerrainControl.log(LogMarker.WARN, "Biome " + biome.getBiomeName() + " could not be found in the registry. This can happen when a biome is a virtual biome (id > 255) but does not have a ReplaceToBiomeName configured.");
+		}
+		
     	BiomeDictionary.registerBiomeType(biome, typeArr);
     }
     
@@ -491,13 +498,14 @@ public class ForgeWorld implements LocalWorld
             {
                 for (int sectionZ = startZInChunk; sectionZ < endZInChunk; sectionZ++)
                 {
-                    LocalBiome biome = this.getBiome(worldStartX + sectionX, worldStartZ + sectionZ);
+                    LocalBiome biome = this.getBiome(worldStartX + sectionX, worldStartZ + sectionZ);                    
                     if (biome != null && biome.getBiomeConfig().replacedBlocks.hasReplaceSettings())
-                    {
+                    {                        
+                    	IBlockState block = null;
                         LocalMaterialData[][] replaceArray = biome.getBiomeConfig().replacedBlocks.compiledInstructions;
                         for (int sectionY = 0; sectionY < 16; sectionY++)
                         {
-                            IBlockState block = section.getData().get(sectionX, sectionY, sectionZ);
+                            block = section.getData().get(sectionX, sectionY, sectionZ);
                             int blockId = Block.getIdFromBlock(block.getBlock());
                             if (replaceArray[blockId] == null)
                                 continue;
@@ -629,7 +637,7 @@ public class ForgeWorld implements LocalWorld
 
     @Override
     public void setBlock(int x, int y, int z, LocalMaterialData material)
-    {    	
+    {    
         /*
          * This method usually breaks on every Minecraft update. Always check
          * whether the names are still correct. Often, you'll also need to
@@ -652,13 +660,13 @@ public class ForgeWorld implements LocalWorld
         {
         	material = ForgeMaterialData.ofDefaultMaterial(DefaultMaterial.REDSTONE_COMPARATOR_OFF, material.getBlockData());
         }
-        else if(defaultMaterial.equals(DefaultMaterial.REDSTONE_LAMP_ON))
+        //else if(defaultMaterial.equals(DefaultMaterial.REDSTONE_LAMP_ON))
         {
-        	material = ForgeMaterialData.ofDefaultMaterial(DefaultMaterial.REDSTONE_LAMP_OFF, material.getBlockData());
+        	//material = ForgeMaterialData.ofDefaultMaterial(DefaultMaterial.REDSTONE_LAMP_OFF, material.getBlockData());
         }
-        else if(defaultMaterial.equals(DefaultMaterial.REDSTONE_TORCH_ON))
+        //else if(defaultMaterial.equals(DefaultMaterial.REDSTONE_TORCH_ON))
         {
-        	material = ForgeMaterialData.ofDefaultMaterial(DefaultMaterial.REDSTONE_TORCH_OFF, material.getBlockData());
+        	//material = ForgeMaterialData.ofDefaultMaterial(DefaultMaterial.REDSTONE_TORCH_OFF, material.getBlockData());
         }
         
         IBlockState newState = ((ForgeMaterialData) material).internalBlock();
@@ -711,6 +719,7 @@ public class ForgeWorld implements LocalWorld
         int y = chunk.getHeightValue(x & 0xf, z & 0xf);
 
         // Fix for incorrect light map
+        // TODO: Fix this properly?
         boolean incorrectHeightMap = false;
         while (y < getHeightCap() && chunk.getBlockState(x, y, z).getMaterial().blocksLight())
         {
@@ -830,7 +839,7 @@ public class ForgeWorld implements LocalWorld
         return this.settings.getWorldConfig().worldHeightScale;
     }
 
-    public ChunkProvider getChunkGenerator()
+    public TXChunkGenerator getChunkGenerator()
     {
         return this.generator;
     }
@@ -886,7 +895,7 @@ public class ForgeWorld implements LocalWorld
         // configure the correct seed for this dimension.
 		// If the world is a TCWorldServerMulti then it was created
 		// by a console command and has already had its seed set
-        if(!isMainWorld && !(world instanceof TCWorldServerMulti))
+        if(!isMainWorld && !(world instanceof TXWorldServerMulti))
         {
         	// TODO: Use seed from Dimensions.txt instead
             long seedIn = (long) Math.floor((Math.random() * Long.MAX_VALUE));
@@ -950,13 +959,13 @@ public class ForgeWorld implements LocalWorld
 
         this.dungeonGen = new WorldGenDungeons();
         this.fossilGen = new WorldGenFossils();
-        this.strongholdGen = new StrongholdGen(configs);
+        this.strongholdGen = new TXStrongholdGen(configs);
 
-        this.villageGen = new VillageGen(configs);
-        this.mineshaftGen = new MineshaftGen();
-        this.rareBuildingGen = new RareBuildingGen(configs);
-        this.netherFortressGen = new NetherFortressGen();
-        this.oceanMonumentGen = new OceanMonumentGen(configs);
+        this.villageGen = new TXVillageGen(configs);
+        this.mineshaftGen = new TXMineshaftGen();
+        this.rareBuildingGen = new TXRareBuildingGen(configs);
+        this.netherFortressGen = new TXNetherFortressGen();
+        this.oceanMonumentGen = new TXOceanMonumentGen(configs);
 
         IBlockState jungleLog = Blocks.LOG.getDefaultState()
                 .withProperty(BlockOldLog.VARIANT, BlockPlanks.EnumType.JUNGLE);
@@ -981,7 +990,7 @@ public class ForgeWorld implements LocalWorld
         this.jungleTree = new WorldGenMegaJungle(false, 10, 20, jungleLog, jungleLeaves);
         this.groundBush = new WorldGenShrub(jungleLog, jungleLeaves);
 
-        this.generator = new ChunkProvider(this);
+        this.generator = new TXChunkGenerator(this);
     }
 
     public void setBiomeGenerator(BiomeGenerator generator)
@@ -1018,9 +1027,9 @@ public class ForgeWorld implements LocalWorld
     	BlockPos pos = new BlockPos(x, 0, z);
     	Biome biome = this.world.getBiome(pos);
     	int biomeId;
-    	if(biome instanceof BiomeGenCustom)
+    	if(biome instanceof TXBiome)
     	{
-    		biomeId = ((BiomeGenCustom)biome).generationId;
+    		biomeId = ((TXBiome)biome).generationId;
     	} else {
     		biomeId = Biome.getIdForBiome(biome); // Non-TC biomes don't have a generationId, only a saved id
     	}
@@ -1143,7 +1152,7 @@ public class ForgeWorld implements LocalWorld
 
     	for (Biome vanillaBiome : vanillaBiomes)
         {
-        	if (vanillaBiome != null && vanillaBiome.getBiomeName().equals(biomeName) && !(vanillaBiome instanceof BiomeGenCustom))
+        	if (vanillaBiome != null && vanillaBiome.getBiomeName().equals(biomeName) && !(vanillaBiome instanceof TXBiome))
             {
             	biome = vanillaBiome;
             	break;
@@ -1207,7 +1216,7 @@ public class ForgeWorld implements LocalWorld
         
         for(String entry : EntityList.NAME_TO_CLASS.keySet())
         {
-        	if(entry.toLowerCase().replace("entity", "").equals(mobTypeName.toLowerCase().replace("entity", "")))
+        	if(entry.toLowerCase().replace("entity", "").replace("_", "").equals(mobTypeName.toLowerCase().replace("entity", "").replace("_", "")))
         	{
             	entityClass = EntityList.NAME_TO_CLASS.get(entry);
         		break;

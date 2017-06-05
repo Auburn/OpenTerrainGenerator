@@ -4,13 +4,14 @@ import com.khorn.terraincontrol.LocalWorld;
 import com.khorn.terraincontrol.TerrainControl;
 import com.khorn.terraincontrol.forge.ForgeEngine;
 import com.khorn.terraincontrol.forge.ForgeWorld;
-import com.khorn.terraincontrol.forge.TCDimensionManager;
-import com.khorn.terraincontrol.forge.TCWorldType;
+import com.khorn.terraincontrol.forge.TXDimensionManager;
+import com.khorn.terraincontrol.forge.TXWorldType;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -44,7 +45,7 @@ public class WorldListener
 		if(!event.getWorld().isRemote) // Server side only
 		{			
 	        World mcWorld = event.getWorld();
-	        if(event.getWorld().getWorldType() instanceof TCWorldType)
+	        if(event.getWorld().getWorldType() instanceof TXWorldType)
 	        {	        	
 		        ForgeWorld forgeWorld = (ForgeWorld) ((ForgeEngine)TerrainControl.getEngine()).getWorld(mcWorld);
 		        if(forgeWorld == null)
@@ -69,14 +70,14 @@ public class WorldListener
 	    			if((ForgeWorld) ((ForgeEngine)TerrainControl.getEngine()).getWorld(event.getWorld()) != null)
 	    			{    				
 		    			//TerrainControl.log(LogMarker.INFO, "Unloading world " + event.getWorld().getWorldInfo().getWorldName() + " at dim " + dimId);
-		    			((TCWorldType)event.getWorld().getWorldType()).worldLoader.unloadWorld(event.getWorld(), false);
+		    			((TXWorldType)event.getWorld().getWorldType()).worldLoader.unloadWorld(event.getWorld(), false);
 	    			} else {
 	    				// World has already been unloaded, only happens when shutting down server?
 	    			}
 
 		        	if(serverStopping)
 		        	{
-		        		TCDimensionManager.UnloadCustomDimensionData(mcWorld.provider.getDimension());
+		        		TXDimensionManager.UnloadCustomDimensionData(mcWorld.provider.getDimension());
 		        		forgeWorld.unRegisterBiomes();
 		        		
 		        		if(mcWorld.provider.getDimension() == 0)
@@ -88,7 +89,7 @@ public class WorldListener
 		        			{
 		        				if(unloadedWorld.getWorld() != mcWorld)
 		        				{
-			    	        		TCDimensionManager.UnloadCustomDimensionData(unloadedWorld.getWorld().provider.getDimension());
+			    	        		TXDimensionManager.UnloadCustomDimensionData(unloadedWorld.getWorld().provider.getDimension());
 			        				unloadedWorld.unRegisterBiomes();
 		        				}
 		        			}

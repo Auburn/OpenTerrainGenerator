@@ -6,29 +6,61 @@ import java.io.IOException;
 import com.khorn.terraincontrol.LocalWorld;
 import com.khorn.terraincontrol.TerrainControl;
 import com.khorn.terraincontrol.configuration.ConfigToNetworkSender;
+import com.khorn.terraincontrol.configuration.WorldConfig;
 import com.khorn.terraincontrol.configuration.standard.PluginStandardValues;
 import com.khorn.terraincontrol.forge.DimensionData;
 import com.khorn.terraincontrol.forge.ForgeEngine;
+import com.khorn.terraincontrol.forge.ForgeWorld;
 import com.khorn.terraincontrol.forge.OTGDimensionInfo;
-import com.khorn.terraincontrol.forge.TCDimensionManager;
-import com.khorn.terraincontrol.forge.TCPlugin;
+import com.khorn.terraincontrol.forge.TXDimensionManager;
+import com.khorn.terraincontrol.forge.TXPlugin;
 import com.khorn.terraincontrol.forge.client.events.DimensionSyncPacket;
 import com.khorn.terraincontrol.logging.LogMarker;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import net.minecraftforge.fml.common.network.FMLOutboundHandler;
 import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
 import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class PlayerTracker
-{
+{    
+	/*
+	@SubscribeEvent
+	//@SideOnly(Side.SERVER)
+	public void onEntityJoinWorld(EntityJoinWorldEvent e)
+	{		
+		if(e.getEntity() instanceof EntityPlayer)// && e.getEntity().dimension != 0)
+		{				
+			ForgeWorld forgeWorld = (ForgeWorld)((ForgeEngine)TerrainControl.getEngine()).getWorld(e.getEntity().worldObj);
+			TerrainControl.log(LogMarker.INFO, "JOINWORLDA " + e.getEntity().getName());
+			if(forgeWorld != null)
+			{
+				WorldConfig worldConfig = forgeWorld.getConfigs().getWorldConfig();
+				//if(worldConfig.isNightWorld)
+				{
+					TerrainControl.log(LogMarker.INFO, "JOINWORLDB " + e.getEntity().getName());
+					EntityPlayer player = (EntityPlayer)e.getEntity();
+					//player.capabilities.allowEdit = false;
+					player.capabilities.allowFlying = true;
+					player.sendPlayerAbilities();
+					return;
+				}
+			}
+		}
+	}
+	*/
+	
     @SubscribeEvent
     public void onConnectionCreated(FMLNetworkEvent.ServerConnectionFromClientEvent event)
     {
@@ -47,7 +79,7 @@ public class PlayerTracker
     {
         // Make sure worlds are sent in the correct order.
         
-		OTGDimensionInfo otgDimData = TCDimensionManager.GetOrderedDimensionData();
+		OTGDimensionInfo otgDimData = TXDimensionManager.GetOrderedDimensionData();
 		
         // Serialize it
         ByteBuf nettyBuffer = Unpooled.buffer();
@@ -107,8 +139,8 @@ public class PlayerTracker
     	// Send dimensions to client
     	packet.setData(nettyBuffer);
         
-        TCPlugin.channels.get(Side.SERVER).attr(FMLOutboundHandler.FML_MESSAGETARGET).set(FMLOutboundHandler.OutboundTarget.DISPATCHER);
-        TCPlugin.channels.get(Side.SERVER).attr(FMLOutboundHandler.FML_MESSAGETARGETARGS).set(networkManager.channel().attr(NetworkDispatcher.FML_DISPATCHER).get());
-        TCPlugin.channels.get(Side.SERVER).writeOutbound(packet);
+        TXPlugin.channels.get(Side.SERVER).attr(FMLOutboundHandler.FML_MESSAGETARGET).set(FMLOutboundHandler.OutboundTarget.DISPATCHER);
+        TXPlugin.channels.get(Side.SERVER).attr(FMLOutboundHandler.FML_MESSAGETARGETARGS).set(networkManager.channel().attr(NetworkDispatcher.FML_DISPATCHER).get());
+        TXPlugin.channels.get(Side.SERVER).writeOutbound(packet);
     }
 }

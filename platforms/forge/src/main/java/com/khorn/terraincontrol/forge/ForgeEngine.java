@@ -108,12 +108,6 @@ public class ForgeEngine extends TerrainControlEngine
     	ForgeWorld world = getOverWorld(); // If overworld is null then the overworld is not an OTG world
     	return world == null ? false : world.getConfigs().getWorldConfig().Cartographer;
     }
-
-    public boolean getDimensionsEnabled()
-    { 	
-    	ForgeWorld world = getOverWorld(); // If overworld is null then the overworld is not an OTG world    	
-    	return world == null ? false : world.getConfigs().getWorldConfig().DimensionsEnabled;
-    }
     
     public ForgeWorld getOverWorld()
     {

@@ -2,9 +2,10 @@ package com.khorn.terraincontrol.bukkit;
 
 import com.khorn.terraincontrol.*;
 import com.khorn.terraincontrol.bukkit.generator.BukkitVanillaBiomeGenerator;
-import com.khorn.terraincontrol.bukkit.generator.TCChunkGenerator;
-import com.khorn.terraincontrol.bukkit.generator.TCWorldChunkManager;
-import com.khorn.terraincontrol.bukkit.generator.TCWorldProvider;
+import com.khorn.terraincontrol.bukkit.generator.TXChunkGenerator;
+import com.khorn.terraincontrol.bukkit.generator.TXInternalChunkGenerator;
+import com.khorn.terraincontrol.bukkit.generator.TXWorldChunkManager;
+import com.khorn.terraincontrol.bukkit.generator.TXWorldProvider;
 import com.khorn.terraincontrol.bukkit.generator.structures.*;
 import com.khorn.terraincontrol.bukkit.util.NBTHelper;
 import com.khorn.terraincontrol.configuration.*;
@@ -107,7 +108,7 @@ public class BukkitWorld implements LocalWorld
     // Initially false, set to true when enabled once
     private boolean initialized;
 
-    private TCChunkGenerator generator;
+    private TXChunkGenerator generator;
     private WorldServer world;
     private ServerConfigProvider settings;
     private CustomObjectStructureCache structureCache;
@@ -123,12 +124,12 @@ public class BukkitWorld implements LocalWorld
 
     private final Map<String, LocalBiome> biomeNames = new HashMap<String, LocalBiome>();
 
-    public StrongholdGen strongholdGen;
-    public VillageGen villageGen;
-    public MineshaftGen mineshaftGen;
-    public RareBuildingGen pyramidsGen;
-    public NetherFortressGen netherFortressGen;
-    public OceanMonumentGen oceanMonumentGen;
+    public TXStrongholdGen strongholdGen;
+    public TXVillageGen villageGen;
+    public TXMineshaftGen mineshaftGen;
+    public TXRareBuildingGen rareBuildingGen;
+    public TXNetherFortressGen netherFortressGen;
+    public TXOceanMonumentGen oceanMonumentGen;
 
     private WorldGenDungeons dungeon;
     private WorldGenFossils fossil;
@@ -253,7 +254,7 @@ public class BukkitWorld implements LocalWorld
         if (worldConfig.villagesEnabled && dry)
             this.villageGen.a(this.world, chunkX, chunkZ, null);
         if (worldConfig.rareBuildingsEnabled)
-            this.pyramidsGen.a(this.world, chunkX, chunkZ, null);
+            this.rareBuildingGen.a(this.world, chunkX, chunkZ, null);
         if (worldConfig.netherFortressesEnabled)
             this.netherFortressGen.a(this.world, chunkX, chunkZ, null);
         if (worldConfig.oceanMonumentsEnabled)
@@ -338,7 +339,7 @@ public class BukkitWorld implements LocalWorld
         if (worldConfig.villagesEnabled)
             villageGenerated = this.villageGen.a(this.world, random, chunkIntPair);
         if (worldConfig.rareBuildingsEnabled)
-            this.pyramidsGen.a(this.world, random, chunkIntPair);
+            this.rareBuildingGen.a(this.world, random, chunkIntPair);
         if (worldConfig.netherFortressesEnabled)
             this.netherFortressGen.a(this.world, random, chunkIntPair);
         if (worldConfig.oceanMonumentsEnabled)
@@ -732,7 +733,7 @@ public class BukkitWorld implements LocalWorld
         return settings.getWorldConfig().worldHeightScale;
     }
 
-    public TCChunkGenerator getChunkGenerator()
+    public TXChunkGenerator getChunkGenerator()
     {
         return this.generator;
     }
@@ -787,7 +788,7 @@ public class BukkitWorld implements LocalWorld
         {
             // Only replace the worldProvider if it's the overworld
             // Replacing other dimensions causes a lot of glitches
-            mcWorld.worldProvider = new TCWorldProvider(this, this.world.worldProvider);
+            mcWorld.worldProvider = new TXWorldProvider(this, this.world.worldProvider);
         }
 
         // Inject our own BiomeManager (called WorldChunkManager)
@@ -809,15 +810,15 @@ public class BukkitWorld implements LocalWorld
             {
                 case Normal:
                 case OldGenerator:
-                    this.strongholdGen = new StrongholdGen(settings);
-                    this.villageGen = new VillageGen(settings);
-                    this.mineshaftGen = new MineshaftGen();
-                    this.pyramidsGen = new RareBuildingGen(settings);
-                    this.netherFortressGen = new NetherFortressGen();
-                    this.oceanMonumentGen = new OceanMonumentGen(settings);
+                    this.strongholdGen = new TXStrongholdGen(settings);
+                    this.villageGen = new TXVillageGen(settings);
+                    this.mineshaftGen = new TXMineshaftGen();
+                    this.rareBuildingGen = new TXRareBuildingGen(settings);
+                    this.netherFortressGen = new TXNetherFortressGen();
+                    this.oceanMonumentGen = new TXOceanMonumentGen(settings);
 
                     // Inject our own ChunkGenerator
-                    injectStrongholdGenerator(this.strongholdGen);
+                    injectInternalChunkGenerator(new TXInternalChunkGenerator(this, generator));
                 case NotGenerate:
                 case TerrainTest:
                     this.generator.onInitialize(this);
@@ -874,16 +875,18 @@ public class BukkitWorld implements LocalWorld
         {
             // Let Minecraft's biome generator depend on ours
             ReflectionHelper.setValueInFieldOfType(this.world.worldProvider,
-                    WorldChunkManager.class, new TCWorldChunkManager(this, biomeGenerator));
+                    WorldChunkManager.class, new TXWorldChunkManager(this, biomeGenerator));
         }
     }
 
-    private void injectStrongholdGenerator(WorldGenStronghold strongholdGen)
+    private void injectInternalChunkGenerator(CustomChunkGenerator chunkGenerator)
     {
         ChunkProviderServer chunkProvider = this.world.getChunkProviderServer();
-        ChunkGenerator chunkGenerator = ReflectionHelper.getValueInFieldOfType(chunkProvider, ChunkGenerator.class);
-        if (chunkGenerator instanceof CustomChunkGenerator) {
-            ReflectionHelper.setValueInFieldOfType(chunkGenerator, WorldGenStronghold.class, strongholdGen);
+        //ChunkGenerator chunkGenerator = ReflectionHelper.getValueInFieldOfType(chunkProvider, ChunkGenerator.class);
+        ChunkGenerator oldChunkGenerator = chunkProvider.chunkGenerator;
+        if (oldChunkGenerator instanceof CustomChunkGenerator)
+    	{
+        	ReflectionHelper.setValueInFieldOfType(chunkProvider, ChunkGenerator.class, chunkGenerator);
         }
     }
 
@@ -893,16 +896,16 @@ public class BukkitWorld implements LocalWorld
     public void disable()
     {
         // Restore old world provider if replaced
-        if (world.worldProvider instanceof TCWorldProvider)
+        if (world.worldProvider instanceof TXWorldProvider)
         {
-            world.worldProvider = ((TCWorldProvider) world.worldProvider).getOldWorldProvider();
+            world.worldProvider = ((TXWorldProvider) world.worldProvider).getOldWorldProvider();
         }
 
-        // Restore vanilla stronghold generator
-        this.injectStrongholdGenerator(new WorldGenStronghold());
+        // Restore vanilla chunk generator
+        this.injectInternalChunkGenerator(new CustomChunkGenerator(world, getSeed(), generator));        
     }
 
-    public void setChunkGenerator(TCChunkGenerator _generator)
+    public void setChunkGenerator(TXChunkGenerator _generator)
     {
         this.generator = _generator;
     }
