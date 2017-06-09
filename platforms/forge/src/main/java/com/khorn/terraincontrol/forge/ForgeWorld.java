@@ -1206,6 +1206,11 @@ public class ForgeWorld implements LocalWorld
     @Override
     public void SpawnEntity(EntityFunction entityData)
     {    	
+    	if(TerrainControl.getPluginConfig().SpawnLog)
+    	{
+    		TerrainControl.log(LogMarker.INFO, "Attempting to spawn BO3 Entity() " + entityData.groupSize + " x " + entityData.mobName + " at " + entityData.x + " " + entityData.y + " " + entityData.z);
+    	}
+    	
     	Random rand = new Random();
     	
 		String mobTypeName = entityData.mobName;
@@ -1356,6 +1361,11 @@ public class ForgeWorld implements LocalWorld
 	            		
     					((EntityLiving) entityliving).enablePersistence(); // <- makes sure mobs don't de-spawn
 	            		
+    			    	if(TerrainControl.getPluginConfig().SpawnLog)
+    			    	{
+    			    		TerrainControl.log(LogMarker.INFO, "Spawned OK");
+    			    	}
+    					
 	            		world.spawnEntityInWorld(entityliving);
 	            	}
 	            } else {                    					                                                						                                                                                    					                                                
@@ -1374,6 +1384,11 @@ public class ForgeWorld implements LocalWorld
 	                        }
 	                        entityliving.setLocationAndAngles((double)f, (double)f1, (double)f2, rand.nextFloat() * 360.0F, 0.0F);                      
 	            		}					                                                	
+	            		
+    			    	if(TerrainControl.getPluginConfig().SpawnLog)
+    			    	{
+    			    		TerrainControl.log(LogMarker.INFO, "Spawned OK");
+    			    	}
 	            		
 	            		world.spawnEntityInWorld(entityliving);
 	            	}						                                                	

@@ -198,6 +198,8 @@ public class WorldConfig extends ConfigFile
     
     public String BO3AtSpawn;    
     
+    public boolean teleportToSpawnOnly; // If this is set to true then portals to this dimension will always teleport players to the world's spawn point.
+    
 	// Game rules for worlds used as dimensions with Forge // TODO: Apply to overworld too?
 	
     public String commandBlockOutput; // Whether command blocks should notify admins when they perform commands
@@ -229,9 +231,9 @@ public class WorldConfig extends ConfigFile
 	public String welcomeMessage; // A message to display to the user when they transfer to this dimension.
 	public String departMessage; // A Message to display to the user when they transfer out of this dimension.
 	//public boolean isHellWorld = false; // DoesWaterVaporize sets this
-	public boolean hasNoSky; // A boolean that tells if a world does not have a sky. Used in calculating weather and skylight. Also affects GetActualHeight(), hasNoSky = true worlds are seen as 128 height worlds, which affects nether portal placement/detection.
+	public boolean hasSkyLight; // A boolean that tells if a world does not have a sky. Used in calculating weather and skylight. Also affects GetActualHeight(), hasNoSky = true worlds are seen as 128 height worlds, which affects nether portal placement/detection.
 	public boolean isSurfaceWorld; // Returns 'true' if in the "main surface world", but 'false' if in the Nether or End dimensions. Affects: Clock, Compass, sky/cloud rendering, allowed to sleep here, zombie pigmen spawning in portal frames. 
-	public boolean canCoordinateBeSpawn; // Will check if the x, z position specified is alright to be set as the map spawn point
+	//public boolean canCoordinateBeSpawn; // Will check if the x, z position specified is alright to be set as the map spawn point
 	public boolean canRespawnHere; // True if the player can respawn in this dimension (true = overworld, false = nether).
 	
 	public boolean doesWaterVaporize; // True for nether, any water that is placed vaporises.
@@ -612,6 +614,8 @@ public class WorldConfig extends ConfigFile
         this.dimensionBelow = reader.getSetting(WorldStandardValues.DIMENSIONBELOW);
         this.dimensionAbove = reader.getSetting(WorldStandardValues.DIMENSIONABOVE);
         
+        this.teleportToSpawnOnly = reader.getSetting(WorldStandardValues.teleportToSpawnOnly);
+        
         this.commandBlockOutput = reader.getSetting(WorldStandardValues.commandBlockOutput).toString(); // "true"; // Whether command blocks should notify admins when they perform commands
         this.disableElytraMovementCheck = reader.getSetting(WorldStandardValues.disableElytraMovementCheck).toString(); // "false"; // Whether the server should skip checking player speed when the player is wearing elytra. Often helps with jittering due to lag in multiplayer, but may also be used to travel unfairly long distances in survival mode (cheating).
         this.doDaylightCycle = reader.getSetting(WorldStandardValues.doDaylightCycle).toString(); // "true"; // Whether the day-night cycle and moon phases progress
@@ -641,9 +645,9 @@ public class WorldConfig extends ConfigFile
         this.welcomeMessage = reader.getSetting(WorldStandardValues.welcomeMessage); // ""; // A message to display to the user when they transfer to this dimension.
         this.departMessage = reader.getSetting(WorldStandardValues.departMessage); // A Message to display to the user when they transfer out of this dimension.
         //public boolean isHellWorld = false; // DoesWaterVaporize sets this
-        this.hasNoSky = reader.getSetting(WorldStandardValues.hasNoSky); // false; // A boolean that tells if a world does not have a sky. Used in calculating weather and skylight. Also affects GetActualHeight(), hasNoSky = true worlds are seen as 128 height worlds, which affects nether portal placement/detection.
+        this.hasSkyLight = reader.getSetting(WorldStandardValues.hasSkyLight); // false; // A boolean that tells if a world does not have a sky. Used in calculating weather and skylight. Also affects GetActualHeight(), hasNoSky = true worlds are seen as 128 height worlds, which affects nether portal placement/detection.
         this.isSurfaceWorld = reader.getSetting(WorldStandardValues.isSurfaceWorld); // true; // Returns 'true' if in the "main surface world", but 'false' if in the Nether or End dimensions. Affects: Clock, Compass, sky/cloud rendering, allowed to sleep here, zombie pigmen spawning in portal frames. 
-        this.canCoordinateBeSpawn = reader.getSetting(WorldStandardValues.canCoordinateBeSpawn); // false; // Will check if the x, z position specified is alright to be set as the map spawn point
+        //this.canCoordinateBeSpawn = reader.getSetting(WorldStandardValues.canCoordinateBeSpawn); // false; // Will check if the x, z position specified is alright to be set as the map spawn point
         this.canRespawnHere = reader.getSetting(WorldStandardValues.canRespawnHere); // true; // True if the player can respawn in this dimension (true = overworld, false = nether).
     	
         this.doesWaterVaporize = reader.getSetting(WorldStandardValues.doesWaterVaporize); // false; // True for nether, any water that is placed vaporises.
@@ -1223,11 +1227,14 @@ public class WorldConfig extends ConfigFile
                 "For blocks that have rotation such as QUARTZ_STAIRS, \"QUARTZ_STAIRS\" is the same as \"QUARTZ_STAIRS:3\"."
         		);
         
+        writer.putSetting(WorldStandardValues.teleportToSpawnOnly, this.teleportToSpawnOnly,
+        		"If this is set to true then portals to this dimension will always teleport players to the world's spawn point.");        
+        
         writer.putSetting(WorldStandardValues.CARTOGRAPHER, this.Cartographer,
                 "Currently in development, the Cartographer is a miniature version of the world (1/16th scale) that can be used to view the world (including players) and teleport players and items. Setting this to true loads and updates the Cartographer world map in the Cartographer dimension. The Cartographer can be reached via a Quartz portal with a chiseled quartz base. The mods/OpenTerrainGenerator/worlds/DIM-Cartographer directory must be present (if you also have OTG-Cartographer.jar in your mods directory worlds/DIM-Cartographer should be created automatically).");
         
         writer.smallTitle("Game rules (dimensions only)", "Game rules for dimensions (these do not work for the overworld at the moment). These settings are still in development and may be subject to change in upcoming releases.", "");        
-        
+                      
         writer.putSetting(WorldStandardValues.commandBlockOutput, Boolean.parseBoolean(this.commandBlockOutput), 
         		"Whether command blocks should notify admins when they perform commands");
         writer.putSetting(WorldStandardValues.disableElytraMovementCheck, Boolean.parseBoolean(this.disableElytraMovementCheck),
@@ -1281,12 +1288,12 @@ public class WorldConfig extends ConfigFile
         writer.putSetting(WorldStandardValues.departMessage, this.departMessage,
         		"A Message to display to the user when they transfer out of this dimension.");
     	//public boolean isHellWorld = false; // DoesWaterVaporize sets this
-        writer.putSetting(WorldStandardValues.hasNoSky, this.hasNoSky,
-        		"A boolean that tells if a world does not have a sky. Used in calculating weather and skylight. Also affects GetActualHeight(), hasNoSky = true worlds are seen as 128 height worlds, which affects nether portal placement/detection.");
+        writer.putSetting(WorldStandardValues.hasSkyLight, this.hasSkyLight,
+        		"A boolean that tells if a world has a sky or not. Used for calculating weather and skylight. Also affects GetActualHeight(), hasSkyLight = false worlds are seen as 128 height worlds, which affects nether portal placement/detection.");
         writer.putSetting(WorldStandardValues.isSurfaceWorld, this.isSurfaceWorld,
         		"Returns 'true' if in the \"main surface world\", but 'false' if in the Nether or End dimensions. Affects: Clock, Compass, sky/cloud rendering, allowed to sleep here, zombie pigmen spawning in portal frames."); 
-        writer.putSetting(WorldStandardValues.canCoordinateBeSpawn, this.canCoordinateBeSpawn,
-        		"Will check if the x, z position specified is alright to be set as the map spawn point.");
+        //writer.putSetting(WorldStandardValues.canCoordinateBeSpawn, this.canCoordinateBeSpawn,
+        		//"Will check if the x, z position specified is alright to be set as the map spawn point.");
         writer.putSetting(WorldStandardValues.canRespawnHere, this.canRespawnHere,
         		"True if the player can respawn in this dimension (true = overworld, false = nether).");    	
         writer.putSetting(WorldStandardValues.doesWaterVaporize, this.doesWaterVaporize,

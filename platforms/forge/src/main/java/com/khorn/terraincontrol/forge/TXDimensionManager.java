@@ -66,7 +66,7 @@ public class TXDimensionManager
 		if(initDimension)
 		{
 			initDimension(newDimId, dimensionName);
-		}		
+		}
 		
 		int maxOrder = -1;
 		for(Integer dimOrder : dimensionsOrder.values())

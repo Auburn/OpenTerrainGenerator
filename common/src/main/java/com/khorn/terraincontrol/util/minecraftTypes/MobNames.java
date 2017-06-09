@@ -10,6 +10,8 @@ import java.util.Map;
  */
 public enum MobNames
 {
+	//See: net.minecraft.entity.EntityList for internal mob names list
+	
 	BAT("Bat", "bat"),
 	BLAZE("Blaze", "blaze"),
 	CAVESPIDER("CaveSpider", "cavespider"),	

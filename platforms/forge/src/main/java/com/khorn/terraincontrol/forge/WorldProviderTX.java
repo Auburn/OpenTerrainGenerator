@@ -223,9 +223,8 @@ public class WorldProviderTX extends WorldProvider
     @Override
     public int getAverageGroundLevel()
     {
-    	//WorldConfig worldConfig = GetWorldConfig();
-        //return worldConfig != null ? worldConfig.averageGroundlevel : this.worldObj.getSeaLevel() + 1;
-    	return this.worldObj.getSeaLevel() + 1;
+    	WorldConfig worldConfig = GetWorldConfig();
+   		return worldConfig != null ? worldConfig.waterLevelMax + 1 : this.worldObj.getSeaLevel() + 1;
     }
     
     // Called to determine if the chunk at the given chunk coordinates within the provider's world can be dropped. Used
@@ -278,9 +277,8 @@ public class WorldProviderTX extends WorldProvider
     @Override
     public double getHorizon()
     {
-    	//WorldConfig worldConfig = GetWorldConfig();
-   		//return worldConfig != null ? worldConfig.horizonHeight : WorldStandardValues.horizonHeight.getDefaultValue();
-    	return this.worldObj.getSeaLevel();
+    	WorldConfig worldConfig = GetWorldConfig();
+    	return worldConfig != null ? worldConfig.waterLevelMax : this.worldObj.getSeaLevel();
     }
         
     @Override
@@ -316,8 +314,9 @@ public class WorldProviderTX extends WorldProvider
     @Override
     public boolean getHasNoSky()
     {
-    	return super.getHasNoSky();
-    }    
+    	WorldConfig worldConfig = GetWorldConfig();
+    	return worldConfig != null ? !worldConfig.hasSkyLight : !WorldStandardValues.hasSkyLight.getDefaultValue();
+    }
     
     @SideOnly(Side.CLIENT)
     @Override
