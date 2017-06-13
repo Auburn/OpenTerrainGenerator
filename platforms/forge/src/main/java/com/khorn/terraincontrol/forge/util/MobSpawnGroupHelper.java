@@ -50,7 +50,12 @@ public final class MobSpawnGroupHelper
      */
     private static WeightedMobSpawnGroup fromMinecraftGroup(Biome.SpawnListEntry biomeMeta)
     {
-        return new WeightedMobSpawnGroup(fromMinecraftClass(biomeMeta.entityClass), biomeMeta.itemWeight, biomeMeta.minGroupCount, biomeMeta.maxGroupCount);
+    	String mobName = fromMinecraftClass(biomeMeta.entityClass);
+    	if(mobName == null)
+    	{
+    		return null;
+    	}
+        return new WeightedMobSpawnGroup(mobName, biomeMeta.itemWeight, biomeMeta.minGroupCount, biomeMeta.maxGroupCount);
     }
 
     /**
@@ -76,7 +81,11 @@ public final class MobSpawnGroupHelper
         List<WeightedMobSpawnGroup> result = new ArrayList<WeightedMobSpawnGroup>();
         for (SpawnListEntry meta : biomeMetas)
         {
-            result.add(fromMinecraftGroup(meta));
+        	WeightedMobSpawnGroup wMSG = fromMinecraftGroup(meta);
+        	if(wMSG != null)
+        	{
+        		result.add(wMSG);	
+        	}  
         }
         return result;
     }
@@ -139,6 +148,12 @@ public final class MobSpawnGroupHelper
      */
     private static String fromMinecraftClass(Class<?> entityClass)
     {
-        return EntityList.CLASS_TO_NAME.get(entityClass);
+    	String mobName = EntityList.CLASS_TO_NAME.get(entityClass);
+    	if(mobName != null)
+    	{
+    		return mobName;
+    	}
+    	TerrainControl.log(LogMarker.DEBUG, "No EntityRegistry entry found for class: " + entityClass);
+        return null;
     }
 }

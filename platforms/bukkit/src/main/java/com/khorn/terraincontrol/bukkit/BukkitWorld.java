@@ -1007,20 +1007,30 @@ public class BukkitWorld implements LocalWorld
 		int groupSize = entityData.groupSize;
 		String nameTag = entityData.nameTagOrNBTFileName;
 
-		EntityType entityType;
-		try
-		{			
-			entityType = EntityType.valueOf(mobTypeName.toUpperCase());
-		}
-		catch(IllegalArgumentException ex)
+		EntityType entityType = null;
+		
+		for(EntityType entityType1 : EntityType.values())
 		{
-			entityType = EntityType.fromName(mobTypeName);
-			
-			if(entityType == null)
+			if(entityType1.name() != null && mobTypeName.toLowerCase().replace("_", "").replace(" ", "").replace("entity","").equals(entityType1.name().toLowerCase().replace("_", "").replace(" ", "").replace("entity","")))
 			{
-				TerrainControl.log(LogMarker.WARN, "Could not find entity: " + mobTypeName);
-				return;
+				entityType = entityType1;
+				break;
 			}
+		}
+			
+		// Make sure all mob names that forge accepts also work here
+		
+    	if(mobTypeName.toLowerCase().replace("entity", "").replace("_", "").replace(" ", "").equals("zombiepigman"))
+    	{
+    		entityType = org.bukkit.entity.EntityType.PIG_ZOMBIE;
+    	}
+
+    	//
+		
+		if(entityType == null)
+		{
+			TerrainControl.log(LogMarker.WARN, "Could not find entity: " + mobTypeName);
+			return;
 		}
 
 		if (entityType == EntityType.PLAYER)
@@ -1181,8 +1191,8 @@ public class BukkitWorld implements LocalWorld
 	}
 	
 	private Entity getEntity(Class<? extends org.bukkit.entity.Entity> clazz)
-	{
-		Entity entity = null;
+	{		
+		// TODO: Clean up and optimise this
 		
 		double x = 0;
 		double y = 0;
@@ -1190,271 +1200,272 @@ public class BukkitWorld implements LocalWorld
 		
 		if (org.bukkit.entity.Boat.class.isAssignableFrom(clazz))
 		{
-			entity = new net.minecraft.server.v1_10_R1.EntityBoat(world, x, y, z);
+			return new net.minecraft.server.v1_10_R1.EntityBoat(world, x, y, z);
 		}
 		else if (FallingBlock.class.isAssignableFrom(clazz))
 		{
-			entity = new EntityFallingBlock(world, x, y, z, world.getType(new BlockPosition(x, y, z)));
+			return new EntityFallingBlock(world, x, y, z, world.getType(new BlockPosition(x, y, z)));
 		}
 		else if (org.bukkit.entity.Projectile.class.isAssignableFrom(clazz))
 		{
 			if (org.bukkit.entity.Snowball.class.isAssignableFrom(clazz))
 			{
-				entity = new net.minecraft.server.v1_10_R1.EntitySnowball(world, x, y, z);
+				return new net.minecraft.server.v1_10_R1.EntitySnowball(world, x, y, z);
 			}
 			else if (org.bukkit.entity.Egg.class.isAssignableFrom(clazz))
 			{
-				entity = new net.minecraft.server.v1_10_R1.EntityEgg(world, x, y, z);
+				return new net.minecraft.server.v1_10_R1.EntityEgg(world, x, y, z);
 			}
 			else if (Arrow.class.isAssignableFrom(clazz))
 			{
 				if (org.bukkit.entity.TippedArrow.class.isAssignableFrom(clazz))
 				{
-					entity = new EntityTippedArrow(world);
-					((EntityTippedArrow)entity).setType(org.bukkit.craftbukkit.v1_10_R1.potion.CraftPotionUtil.fromBukkit(new org.bukkit.potion.PotionData(org.bukkit.potion.PotionType.WATER, false, false)));
+					EntityTippedArrow entity = new EntityTippedArrow(world);
+					entity.setType(org.bukkit.craftbukkit.v1_10_R1.potion.CraftPotionUtil.fromBukkit(new org.bukkit.potion.PotionData(org.bukkit.potion.PotionType.WATER, false, false)));
+					return entity;
 				}
 				else if (org.bukkit.entity.SpectralArrow.class.isAssignableFrom(clazz))
 				{
-					entity = new net.minecraft.server.v1_10_R1.EntitySpectralArrow(world);
+					return new net.minecraft.server.v1_10_R1.EntitySpectralArrow(world);
 				} else {
-					entity = new EntityTippedArrow(world);
+					return new EntityTippedArrow(world);
 				}
 			}
 			else if (org.bukkit.entity.ThrownExpBottle.class.isAssignableFrom(clazz))
 			{
-				entity = new net.minecraft.server.v1_10_R1.EntityThrownExpBottle(world);
+				return new net.minecraft.server.v1_10_R1.EntityThrownExpBottle(world);
 			}
 			else if (org.bukkit.entity.EnderPearl.class.isAssignableFrom(clazz))
 			{
-				entity = new net.minecraft.server.v1_10_R1.EntityEnderPearl(world);
+				return new net.minecraft.server.v1_10_R1.EntityEnderPearl(world);
 			}
 			else if (org.bukkit.entity.ThrownPotion.class.isAssignableFrom(clazz))
 			{
 				if (org.bukkit.entity.LingeringPotion.class.isAssignableFrom(clazz))
 				{
-					entity = new net.minecraft.server.v1_10_R1.EntityPotion(world, x, y, z, CraftItemStack.asNMSCopy(new ItemStack(org.bukkit.Material.LINGERING_POTION, 1)));
+					return new net.minecraft.server.v1_10_R1.EntityPotion(world, x, y, z, CraftItemStack.asNMSCopy(new ItemStack(org.bukkit.Material.LINGERING_POTION, 1)));
 				} else {
-					entity = new net.minecraft.server.v1_10_R1.EntityPotion(world, x, y, z, CraftItemStack.asNMSCopy(new ItemStack(org.bukkit.Material.SPLASH_POTION, 1)));
+					return new net.minecraft.server.v1_10_R1.EntityPotion(world, x, y, z, CraftItemStack.asNMSCopy(new ItemStack(org.bukkit.Material.SPLASH_POTION, 1)));
 				}
 			}
 			else if (org.bukkit.entity.Fireball.class.isAssignableFrom(clazz))
 			{
 				if (org.bukkit.entity.SmallFireball.class.isAssignableFrom(clazz))
 				{
-					entity = new net.minecraft.server.v1_10_R1.EntitySmallFireball(world);
+					return new net.minecraft.server.v1_10_R1.EntitySmallFireball(world);
 				}
 				else if (org.bukkit.entity.WitherSkull.class.isAssignableFrom(clazz))
 				{
-					entity = new net.minecraft.server.v1_10_R1.EntityWitherSkull(world);
+					return new net.minecraft.server.v1_10_R1.EntityWitherSkull(world);
 				}
 				else if (org.bukkit.entity.DragonFireball.class.isAssignableFrom(clazz))
 				{
-					entity = new net.minecraft.server.v1_10_R1.EntityDragonFireball(world);
+					return new net.minecraft.server.v1_10_R1.EntityDragonFireball(world);
 				} else {
-					entity = new net.minecraft.server.v1_10_R1.EntityLargeFireball(world);
+					return new net.minecraft.server.v1_10_R1.EntityLargeFireball(world);
 				}
 			}
 			else if (org.bukkit.entity.ShulkerBullet.class.isAssignableFrom(clazz))
 			{
-				entity = new net.minecraft.server.v1_10_R1.EntityShulkerBullet(world);
+				return new net.minecraft.server.v1_10_R1.EntityShulkerBullet(world);
 			}
 		}
 		else if (org.bukkit.entity.Minecart.class.isAssignableFrom(clazz))
 		{
 			if (org.bukkit.entity.minecart.PoweredMinecart.class.isAssignableFrom(clazz))
 			{
-				entity = new net.minecraft.server.v1_10_R1.EntityMinecartFurnace(world, x, y, z);
+				return new net.minecraft.server.v1_10_R1.EntityMinecartFurnace(world, x, y, z);
 			}
 			else if (org.bukkit.entity.minecart.StorageMinecart.class.isAssignableFrom(clazz))
 			{
-				entity = new net.minecraft.server.v1_10_R1.EntityMinecartChest(world, x, y, z);
+				return new net.minecraft.server.v1_10_R1.EntityMinecartChest(world, x, y, z);
 			}
 			else if (org.bukkit.entity.minecart.ExplosiveMinecart.class.isAssignableFrom(clazz))
 			{
-				entity = new net.minecraft.server.v1_10_R1.EntityMinecartTNT(world, x, y, z);
+				return new net.minecraft.server.v1_10_R1.EntityMinecartTNT(world, x, y, z);
 			}
 			else if (org.bukkit.entity.minecart.HopperMinecart.class.isAssignableFrom(clazz))
 			{
-				entity = new net.minecraft.server.v1_10_R1.EntityMinecartHopper(world, x, y, z);
+				return new net.minecraft.server.v1_10_R1.EntityMinecartHopper(world, x, y, z);
 			}
 			else if (org.bukkit.entity.minecart.SpawnerMinecart.class.isAssignableFrom(clazz))
 			{
-				entity = new net.minecraft.server.v1_10_R1.EntityMinecartMobSpawner(world, x, y, z);
+				return new net.minecraft.server.v1_10_R1.EntityMinecartMobSpawner(world, x, y, z);
 			}
 			else if (org.bukkit.entity.minecart.CommandMinecart.class.isAssignableFrom(clazz))
 			{
-				entity = new net.minecraft.server.v1_10_R1.EntityMinecartCommandBlock(world, x, y, z);
+				return new net.minecraft.server.v1_10_R1.EntityMinecartCommandBlock(world, x, y, z);
 			} else {
-				entity = new net.minecraft.server.v1_10_R1.EntityMinecartRideable(world, x, y, z);
+				return new net.minecraft.server.v1_10_R1.EntityMinecartRideable(world, x, y, z);
 			}
 		}
 		else if (org.bukkit.entity.EnderSignal.class.isAssignableFrom(clazz))
 		{
-			entity = new net.minecraft.server.v1_10_R1.EntityEnderSignal(world, x, y, z);
+			return new net.minecraft.server.v1_10_R1.EntityEnderSignal(world, x, y, z);
 		}
 		else if (org.bukkit.entity.EnderCrystal.class.isAssignableFrom(clazz))
 		{
-			entity = new net.minecraft.server.v1_10_R1.EntityEnderCrystal(world);
+			return new net.minecraft.server.v1_10_R1.EntityEnderCrystal(world);
 		}
 		else if (LivingEntity.class.isAssignableFrom(clazz))
 		{
 			if (org.bukkit.entity.Chicken.class.isAssignableFrom(clazz))
 			{
-				entity = new net.minecraft.server.v1_10_R1.EntityChicken(world);
+				return new net.minecraft.server.v1_10_R1.EntityChicken(world);
 			}
 			else if (org.bukkit.entity.Cow.class.isAssignableFrom(clazz))
 			{
 				if (org.bukkit.entity.MushroomCow.class.isAssignableFrom(clazz))
 				{
-					entity = new net.minecraft.server.v1_10_R1.EntityMushroomCow(world);
+					return new net.minecraft.server.v1_10_R1.EntityMushroomCow(world);
 				} else {
-					entity = new net.minecraft.server.v1_10_R1.EntityCow(world);
+					return new net.minecraft.server.v1_10_R1.EntityCow(world);
 				}
 			}
 			else if (org.bukkit.entity.Golem.class.isAssignableFrom(clazz))
 			{
 				if (org.bukkit.entity.Snowman.class.isAssignableFrom(clazz))
 				{
-					entity = new net.minecraft.server.v1_10_R1.EntitySnowman(world);
+					return new net.minecraft.server.v1_10_R1.EntitySnowman(world);
 				}
 				else if (org.bukkit.entity.IronGolem.class.isAssignableFrom(clazz))
 				{
-					entity = new net.minecraft.server.v1_10_R1.EntityIronGolem(world);
+					return new net.minecraft.server.v1_10_R1.EntityIronGolem(world);
 				}
 				else if (org.bukkit.entity.Shulker.class.isAssignableFrom(clazz))
 				{
-					entity = new net.minecraft.server.v1_10_R1.EntityShulker(world);
+					return new net.minecraft.server.v1_10_R1.EntityShulker(world);
 				}
 			} 
 			else if (org.bukkit.entity.Creeper.class.isAssignableFrom(clazz))
 			{
-				entity = new net.minecraft.server.v1_10_R1.EntityCreeper(world);
+				return new net.minecraft.server.v1_10_R1.EntityCreeper(world);
 			}
 			else if (org.bukkit.entity.Ghast.class.isAssignableFrom(clazz))
 			{
-				entity = new net.minecraft.server.v1_10_R1.EntityGhast(world);
+				return new net.minecraft.server.v1_10_R1.EntityGhast(world);
 			}
 			else if (org.bukkit.entity.Pig.class.isAssignableFrom(clazz))
 			{
-				entity = new net.minecraft.server.v1_10_R1.EntityPig(world);
+				return new net.minecraft.server.v1_10_R1.EntityPig(world);
 			}
 			else if (!Player.class.isAssignableFrom(clazz))
 			{
 				if (org.bukkit.entity.Sheep.class.isAssignableFrom(clazz))
 				{
-					entity = new net.minecraft.server.v1_10_R1.EntitySheep(world);
+					return new net.minecraft.server.v1_10_R1.EntitySheep(world);
 				}
 				else if (org.bukkit.entity.Horse.class.isAssignableFrom(clazz))
 				{
-					entity = new net.minecraft.server.v1_10_R1.EntityHorse(world);
+					return new net.minecraft.server.v1_10_R1.EntityHorse(world);
 				}
 				else if (org.bukkit.entity.Skeleton.class.isAssignableFrom(clazz))
 				{
-					entity = new net.minecraft.server.v1_10_R1.EntitySkeleton(world);
+					return new net.minecraft.server.v1_10_R1.EntitySkeleton(world);
 				}
 				else if (org.bukkit.entity.Slime.class.isAssignableFrom(clazz))
 				{
 					if (org.bukkit.entity.MagmaCube.class.isAssignableFrom(clazz))
 					{
-						entity = new net.minecraft.server.v1_10_R1.EntityMagmaCube(world);
+						return new net.minecraft.server.v1_10_R1.EntityMagmaCube(world);
 					} else {
-						entity = new net.minecraft.server.v1_10_R1.EntitySlime(world);
+						return new net.minecraft.server.v1_10_R1.EntitySlime(world);
 					}
 				}
 				else if (org.bukkit.entity.Spider.class.isAssignableFrom(clazz))
 				{
 					if (org.bukkit.entity.CaveSpider.class.isAssignableFrom(clazz))
 					{
-						entity = new net.minecraft.server.v1_10_R1.EntityCaveSpider(world);
+						return new net.minecraft.server.v1_10_R1.EntityCaveSpider(world);
 					} else {
-						entity = new net.minecraft.server.v1_10_R1.EntitySpider(world);
+						return new net.minecraft.server.v1_10_R1.EntitySpider(world);
 					}
 				}
 				else if (org.bukkit.entity.Squid.class.isAssignableFrom(clazz))
 				{
-					entity = new net.minecraft.server.v1_10_R1.EntitySquid(world);
+					return new net.minecraft.server.v1_10_R1.EntitySquid(world);
 				}
 				else if (org.bukkit.entity.Tameable.class.isAssignableFrom(clazz))
 				{
 					if (org.bukkit.entity.Wolf.class.isAssignableFrom(clazz))
 					{
-						entity = new net.minecraft.server.v1_10_R1.EntityWolf(world);
+						return new net.minecraft.server.v1_10_R1.EntityWolf(world);
 					}
 					else if (org.bukkit.entity.Ocelot.class.isAssignableFrom(clazz))
 					{
-						entity = new EntityOcelot(world);
+						return new EntityOcelot(world);
 					}
 				}
 				else if (org.bukkit.entity.PigZombie.class.isAssignableFrom(clazz))
 				{
-					entity = new net.minecraft.server.v1_10_R1.EntityPigZombie(world);
+					return new net.minecraft.server.v1_10_R1.EntityPigZombie(world);
 				}
 				else if (org.bukkit.entity.Zombie.class.isAssignableFrom(clazz))
 				{
-					entity = new net.minecraft.server.v1_10_R1.EntityZombie(world);
+					return new net.minecraft.server.v1_10_R1.EntityZombie(world);
 				}
 				else if (org.bukkit.entity.Giant.class.isAssignableFrom(clazz))
 				{
-					entity = new net.minecraft.server.v1_10_R1.EntityGiantZombie(world);
+					return new net.minecraft.server.v1_10_R1.EntityGiantZombie(world);
 				}
 				else if (org.bukkit.entity.Silverfish.class.isAssignableFrom(clazz))
 				{
-					entity = new net.minecraft.server.v1_10_R1.EntitySilverfish(world);
+					return new net.minecraft.server.v1_10_R1.EntitySilverfish(world);
 				}
 				else if (org.bukkit.entity.Enderman.class.isAssignableFrom(clazz))
 				{
-					entity = new net.minecraft.server.v1_10_R1.EntityEnderman(world);
+					return new net.minecraft.server.v1_10_R1.EntityEnderman(world);
 				}
 				else if (org.bukkit.entity.Blaze.class.isAssignableFrom(clazz))
 				{
-					entity = new net.minecraft.server.v1_10_R1.EntityBlaze(world);
+					return new net.minecraft.server.v1_10_R1.EntityBlaze(world);
 				}
 				else if (org.bukkit.entity.Villager.class.isAssignableFrom(clazz))
 				{
-					entity = new net.minecraft.server.v1_10_R1.EntityVillager(world);
+					return new net.minecraft.server.v1_10_R1.EntityVillager(world);
 				}
 				else if (org.bukkit.entity.Witch.class.isAssignableFrom(clazz))
 				{
-					entity = new net.minecraft.server.v1_10_R1.EntityWitch(world);
+					return new net.minecraft.server.v1_10_R1.EntityWitch(world);
 				}
 				else if (org.bukkit.entity.Wither.class.isAssignableFrom(clazz))
 				{
-					entity = new net.minecraft.server.v1_10_R1.EntityWither(world);
+					return new net.minecraft.server.v1_10_R1.EntityWither(world);
 				}
 				else if (org.bukkit.entity.ComplexLivingEntity.class.isAssignableFrom(clazz))
 				{
 					if (org.bukkit.entity.EnderDragon.class.isAssignableFrom(clazz))
 					{
-						entity = new net.minecraft.server.v1_10_R1.EntityEnderDragon(world);
+						return new net.minecraft.server.v1_10_R1.EntityEnderDragon(world);
 					}
 				}
 				else if (org.bukkit.entity.Ambient.class.isAssignableFrom(clazz))
 				{
 					if (org.bukkit.entity.Bat.class.isAssignableFrom(clazz))
 					{
-						entity = new net.minecraft.server.v1_10_R1.EntityBat(world);
+						return new net.minecraft.server.v1_10_R1.EntityBat(world);
 					}
 				}
 				else if (org.bukkit.entity.Rabbit.class.isAssignableFrom(clazz))
 				{
-					entity = new net.minecraft.server.v1_10_R1.EntityRabbit(world);
+					return new net.minecraft.server.v1_10_R1.EntityRabbit(world);
 				}
 				else if (org.bukkit.entity.Endermite.class.isAssignableFrom(clazz))
 				{
-					entity = new net.minecraft.server.v1_10_R1.EntityEndermite(world);
+					return new net.minecraft.server.v1_10_R1.EntityEndermite(world);
 				}
 				else if (org.bukkit.entity.Guardian.class.isAssignableFrom(clazz))
 				{
-					entity = new net.minecraft.server.v1_10_R1.EntityGuardian(world);
+					return new net.minecraft.server.v1_10_R1.EntityGuardian(world);
 				}
 				else if (org.bukkit.entity.ArmorStand.class.isAssignableFrom(clazz))
 				{
-					entity = new net.minecraft.server.v1_10_R1.EntityArmorStand(world, x, y, z);
+					return new net.minecraft.server.v1_10_R1.EntityArmorStand(world, x, y, z);
 				}
 				else if (org.bukkit.entity.PolarBear.class.isAssignableFrom(clazz))
 				{
-					entity = new net.minecraft.server.v1_10_R1.EntityPolarBear(world);
-				}
+					return new net.minecraft.server.v1_10_R1.EntityPolarBear(world);
+				}				
 			}
 		}
 		
@@ -1508,7 +1519,7 @@ public class BukkitWorld implements LocalWorld
 			  
 			if (org.bukkit.entity.LeashHitch.class.isAssignableFrom(clazz))
 			{
-			    entity = new net.minecraft.server.v1_10_R1.EntityLeash(world, new BlockPosition((int)x, (int)y, (int)z));
+			    return new net.minecraft.server.v1_10_R1.EntityLeash(world, new BlockPosition((int)x, (int)y, (int)z));
 			    attachedToPlayer = true;
 			} else {
 			    com.google.common.base.Preconditions.checkArgument(face != BlockFace.SELF, "Cannot spawn hanging entity for %s at %s (no free face)", new Object[] { clazz.getName(), location });
@@ -1516,11 +1527,11 @@ public class BukkitWorld implements LocalWorld
 			    EnumDirection dir = CraftBlock.blockFaceToNotch(face).opposite();
 			    if (org.bukkit.entity.Painting.class.isAssignableFrom(clazz))
 			    {
-			      entity = new net.minecraft.server.v1_10_R1.EntityPainting(world, new BlockPosition((int)x, (int)y, (int)z), dir);
+			      return new net.minecraft.server.v1_10_R1.EntityPainting(world, new BlockPosition((int)x, (int)y, (int)z), dir);
 			    }
 			    else if (org.bukkit.entity.ItemFrame.class.isAssignableFrom(clazz))
 			    {
-			      entity = new net.minecraft.server.v1_10_R1.EntityItemFrame(world, new BlockPosition((int)x, (int)y, (int)z), dir);
+			      return new net.minecraft.server.v1_10_R1.EntityItemFrame(world, new BlockPosition((int)x, (int)y, (int)z), dir);
 			    }
 			}
 			  
@@ -1532,29 +1543,29 @@ public class BukkitWorld implements LocalWorld
 		*/
 		else if (org.bukkit.entity.TNTPrimed.class.isAssignableFrom(clazz))
 		{
-			entity = new net.minecraft.server.v1_10_R1.EntityTNTPrimed(world, x, y, z, null);
+			return new net.minecraft.server.v1_10_R1.EntityTNTPrimed(world, x, y, z, null);
 		}
 		else if (org.bukkit.entity.ExperienceOrb.class.isAssignableFrom(clazz))
 		{
-			entity = new net.minecraft.server.v1_10_R1.EntityExperienceOrb(world, x, y, z, 0);
+			return new net.minecraft.server.v1_10_R1.EntityExperienceOrb(world, x, y, z, 0);
 		}
 		else if (org.bukkit.entity.Weather.class.isAssignableFrom(clazz))
 		{
 			if (LightningStrike.class.isAssignableFrom(clazz))
 			{
-				entity = new EntityLightning(world, x, y, z, false);
+				return new EntityLightning(world, x, y, z, false);
 			}
 		}
 		else if (org.bukkit.entity.Firework.class.isAssignableFrom(clazz))
 		{
-			entity = new net.minecraft.server.v1_10_R1.EntityFireworks(world, x, y, z, null);
+			return new net.minecraft.server.v1_10_R1.EntityFireworks(world, x, y, z, null);
 		}
 		else if (org.bukkit.entity.AreaEffectCloud.class.isAssignableFrom(clazz))
 		{
-			entity = new net.minecraft.server.v1_10_R1.EntityAreaEffectCloud(world, x, y, z);
+			return new net.minecraft.server.v1_10_R1.EntityAreaEffectCloud(world, x, y, z);
 		}
-				  
-		return entity;
+		  
+		return null;
 	}
 	
     // Forge only TODO: Shouldn't really be here, clean this up. 

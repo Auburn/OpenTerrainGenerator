@@ -118,7 +118,8 @@ public class CustomObjectCollection implements Iterable<CustomObject>
             if (file.isDirectory())
             {
                 objects.putAll(loadObjectsRecursive(loaders, file));
-            } else if (index != -1)
+            }
+            else if (index != -1)
             {
                 String objectType = fileName.substring(index + 1, fileName.length());
                 String objectName = fileName.substring(0, index);

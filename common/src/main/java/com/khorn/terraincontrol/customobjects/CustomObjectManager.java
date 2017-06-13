@@ -52,7 +52,7 @@ public class CustomObjectManager
         // Register loaders
         registerCustomObjectLoader("bo2", new BO2Loader());
         registerCustomObjectLoader("bo3", new BO3Loader());
-
+        
         this.globalCustomObjects = new CustomObjectCollection();
 
         // Put some default CustomObjects
