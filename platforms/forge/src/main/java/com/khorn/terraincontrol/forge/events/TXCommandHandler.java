@@ -1,4 +1,4 @@
-package com.khorn.terraincontrol.forge;
+package com.khorn.terraincontrol.forge.events;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -12,13 +12,19 @@ import com.khorn.terraincontrol.TerrainControl;
 import com.khorn.terraincontrol.configuration.ServerConfigProvider;
 import com.khorn.terraincontrol.configuration.WorldConfig;
 import com.khorn.terraincontrol.exception.BiomeNotFoundException;
-import com.khorn.terraincontrol.forge.events.PlayerTracker;
+import com.khorn.terraincontrol.forge.ForgeBiome;
+import com.khorn.terraincontrol.forge.ForgeEngine;
+import com.khorn.terraincontrol.forge.ForgeWorld;
+import com.khorn.terraincontrol.forge.TXWorldType;
+import com.khorn.terraincontrol.forge.dimensions.TXDimensionManager;
 import com.khorn.terraincontrol.forge.util.CommandHelper;
 import com.khorn.terraincontrol.logging.LogMarker;
+import com.khorn.terraincontrol.util.ChunkCoordinate;
 import com.khorn.terraincontrol.util.minecraftTypes.MobNames;
 
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.server.MinecraftServer;
@@ -33,7 +39,7 @@ import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.BiomeDictionary.Type;
 
-final class TXCommandHandler implements ICommand
+public final class TXCommandHandler implements ICommand
 {
     private final List<String> aliases = Arrays.asList("otg");
     public static final TextFormatting ERROR_COLOR = TextFormatting.RED;
@@ -78,9 +84,9 @@ final class TXCommandHandler implements ICommand
             }           
         	
             BlockPos pos = sender.getPosition();
-            int x = pos.getX();
-            int y = pos.getY();
-            int z = pos.getZ();
+            int playerX = pos.getX();
+            int playerY = pos.getY();
+            int playerZ = pos.getZ();
             
             if (argString == null || argString.length == 0)
             {
@@ -88,32 +94,85 @@ final class TXCommandHandler implements ICommand
                 sender.addChatMessage(new TextComponentString("-- OpenTerrainGenerator --"));
                 sender.addChatMessage(new TextComponentString(""));
                 sender.addChatMessage(new TextComponentString("Commands:"));
-                sender.addChatMessage(
-                        new TextComponentString(MESSAGE_COLOR + "/otg worldinfo " + VALUE_COLOR + "Show author and description information for this world."));
-                sender.addChatMessage(
-                        new TextComponentString(MESSAGE_COLOR + "/otg biome (-f, -s, -d, -m) " + VALUE_COLOR + "Show biome information for the biome at the player's coordinates."));
-                sender.addChatMessage(
-                		new TextComponentString(MESSAGE_COLOR + "/otg entities " + VALUE_COLOR + "Show a list of entities that can be spawned inside BO3's using the Entity() tag."));
+                sender.addChatMessage(new TextComponentString(MESSAGE_COLOR + "/otg worldinfo " + VALUE_COLOR + "Show author and description information for this world."));
+                sender.addChatMessage(new TextComponentString(MESSAGE_COLOR + "/otg biome <-f, -s, -d, -m> " + VALUE_COLOR + "Show biome information for the biome at the player's coordinates."));
                 if(isOp)
                 {
-	                sender.addChatMessage(
-	                		new TextComponentString(MESSAGE_COLOR + "/otg pregen <radius> " + VALUE_COLOR + "Sets the pre-generation radius to <radius> chunks. Same as /otg pregenerator <radius>."));
+                    sender.addChatMessage(new TextComponentString(MESSAGE_COLOR + "/otg tp <biome name or id> " + VALUE_COLOR + "Show biome information for the biome at the player's coordinates."));                	
                 }
-                sender.addChatMessage(
-                		new TextComponentString(MESSAGE_COLOR + "/otg dim " + VALUE_COLOR + "Shows the name and id of the dimension the player is currently in. Same as /otg dimension."));
-                sender.addChatMessage(
-                		new TextComponentString(MESSAGE_COLOR + "/otg dim -l " + VALUE_COLOR + "Shows a list of all dimensions. Same as /otg dimension -l."));
+                sender.addChatMessage(new TextComponentString(MESSAGE_COLOR + "/otg entities " + VALUE_COLOR + "Show a list of entities that can be spawned inside BO3's using the Entity() tag."));
+                if(isOp)
+                {
+	                sender.addChatMessage(new TextComponentString(MESSAGE_COLOR + "/otg pregen <radius> " + VALUE_COLOR + "Sets the pre-generation radius to <radius> chunks. Same as /otg pregenerator <radius>."));
+                }
+                sender.addChatMessage(new TextComponentString(MESSAGE_COLOR + "/otg dim " + VALUE_COLOR + "Shows the name and id of the dimension the player is currently in. Same as /otg dimension."));
+                sender.addChatMessage(new TextComponentString(MESSAGE_COLOR + "/otg dim -l " + VALUE_COLOR + "Shows a list of all dimensions. Same as /otg dimension -l."));
             	if(isOp)
             	{                
-	                sender.addChatMessage(
-	                		new TextComponentString(MESSAGE_COLOR + "/otg dim -c <dimension name> " + VALUE_COLOR + "Creates a dimension using world and biome configs from mods/OpenTerrainGenerator/worlds/<dimension name>. Custom dimensions can be accessed via a quartz portal. Biome names must be unique across dimensions. Same as /otg dimension -c <dimension name>"));
-	                sender.addChatMessage(
-	                	new TextComponentString(MESSAGE_COLOR + "/otg dim -d <dimension name> " + VALUE_COLOR + "Deletes the specified dimension. Dimension must be unloaded (dimensions unload automatically when no players are inside, this may take a minute). Same as /otg dimension -d <dimension name>"));
+	                sender.addChatMessage(new TextComponentString(MESSAGE_COLOR + "/otg dim -c <dimension name> " + VALUE_COLOR + "Creates a dimension using world and biome configs from mods/OpenTerrainGenerator/worlds/<dimension name>. Custom dimensions can be accessed via a quartz portal. Biome names must be unique across dimensions. Same as /otg dimension -c <dimension name>"));
+	                sender.addChatMessage(new TextComponentString(MESSAGE_COLOR + "/otg dim -d <dimension name> " + VALUE_COLOR + "Deletes the specified dimension. Dimension must be unloaded (dimensions unload automatically when no players are inside, this may take a minute). Same as /otg dimension -d <dimension name>"));
             	}
                 sender.addChatMessage(new TextComponentString(""));
                 sender.addChatMessage(new TextComponentString("Tips:"));
         		sender.addChatMessage(new TextComponentString(MESSAGE_COLOR + "- Check out OpenTerrainGenerator.ini and each world's WorldConfig.ini for optional features."));
         		sender.addChatMessage(new TextComponentString(MESSAGE_COLOR + "- When using the pre-generator in single player open the chat window so you can background MC without pausing the game."));
+            }
+            else if (isOp && argString[0].equals("tp") && argString.length > 1)
+            {
+            	String biomeName = "";
+            	for(int i = 1; i < argString.length; i++)
+            	{
+            		biomeName += argString[i];
+            	}
+            	if(biomeName != null && biomeName.length() > 0)
+            	{
+            		int biomeId = -1;
+            		try
+            		{
+            			biomeId = Integer.parseInt(biomeName.replace(" ", ""));
+            		}
+            		catch(NumberFormatException ex) { }
+            		
+					ChunkCoordinate playerChunk = ChunkCoordinate.fromBlockCoords(playerX, playerZ);
+            		
+            		int maxRadius = 1000;
+            		for(int cycle = 1; cycle < maxRadius; cycle++)
+            		{
+                		for(int x1 = playerX - cycle; x1 <= playerX + cycle; x1++)            			
+                		{             
+                			for(int z1 = playerZ - cycle; z1 <= playerZ + cycle; z1++)
+                			{
+                				if(x1 == playerX - cycle || x1 == playerX + cycle)
+                				{
+                					if(z1 == playerZ - cycle || z1 == playerZ + cycle)
+                					{
+                						ChunkCoordinate chunkCoord = ChunkCoordinate.fromChunkCoords(playerChunk.getChunkX() + (x1 - playerX), playerChunk.getChunkZ() + (z1 - playerZ));
+                						
+                						ForgeBiome biome = (ForgeBiome)world.getBiome(chunkCoord.getBlockXCenter(), chunkCoord.getBlockZCenter());
+                						
+                						if(
+            								biome != null &&
+            								(
+        	    								(
+        											biomeId == -1 &&
+        											biome.getName().toLowerCase().replace(" ", "").equals(biomeName.toLowerCase().replace(" ", ""))
+        										) || (
+        											biomeId != -1 &&
+        											biome.getIds().getGenerationId() == biomeId
+        										)
+        									)
+        								)
+                						{
+                							((Entity)sender).setPositionAndUpdate(chunkCoord.getBlockXCenter(), world.getHighestBlockYAt(chunkCoord.getBlockXCenter(), chunkCoord.getBlockZCenter()), chunkCoord.getBlockZCenter());
+                							return;
+                						}
+                					}
+                				}
+                			}		
+                		}
+            		}
+            		sender.addChatMessage(new TextComponentTranslation(ERROR_COLOR + "Could not find biome \"" + biomeName + "\"."));            		
+            	}
             }
             else if (argString[0].equals("worldinfo") || argString[0].equals("world"))
             {
@@ -121,6 +180,7 @@ final class TXCommandHandler implements ICommand
         		sender.addChatMessage(new TextComponentString(""));
                 sender.addChatMessage(new TextComponentString("-- World info --"));
                 sender.addChatMessage(new TextComponentString(""));
+                sender.addChatMessage(new TextComponentString(MESSAGE_COLOR + "Name: " + VALUE_COLOR + world.getName()));
                 sender.addChatMessage(new TextComponentString(MESSAGE_COLOR + "Author: " + VALUE_COLOR + worldConfig.author));
                 sender.addChatMessage(new TextComponentString(MESSAGE_COLOR + "Description: " + VALUE_COLOR + worldConfig.description));
             }
@@ -134,8 +194,7 @@ final class TXCommandHandler implements ICommand
             			radius = Integer.parseInt(argString[1]);
             		} catch(java.lang.NumberFormatException ex)
             		{
-            			sender.addChatMessage(
-                                new TextComponentTranslation(ERROR_COLOR + "\"" + argString[1] + "\" could not be parsed as a number."));
+            			sender.addChatMessage(new TextComponentTranslation(ERROR_COLOR + "\"" + argString[1] + "\" could not be parsed as a number."));
             			return;
             		}
             		
@@ -231,7 +290,7 @@ final class TXCommandHandler implements ICommand
 						{
 							DimensionType dimensionType = DimensionManager.getProviderType(i);
 							
-							if(dimensionType.getSuffix().equals("OTG") && dimensionType.getName().equals(dimName))
+							if(dimensionType.getSuffix() != null && dimensionType.getSuffix().equals("OTG") && dimensionType.getName().equals(dimName))
 							{
 								existingDim = i;
 								if(CommandHelper.containsArgument(argString, "-c"))
@@ -251,7 +310,7 @@ final class TXCommandHandler implements ICommand
 	            		{
 	            			// First make sure world is unloaded
 	            			  
-	            			if(((ForgeEngine)TerrainControl.getEngine()).worldLoader.isWorldUnloaded(dimName))
+	            			if(((ForgeEngine)TerrainControl.getEngine()).getWorldLoader().isWorldUnloaded(dimName))
 	            			{
 	            				ForgeWorld forgeWorld = (ForgeWorld) ((ForgeEngine)TerrainControl.getEngine()).getUnloadedWorld(dimName);		            				
 	            				TXDimensionManager.DeleteDimension(existingDim, forgeWorld, server, true);			        			
@@ -326,7 +385,7 @@ final class TXCommandHandler implements ICommand
     				return;
     			}
 
-                LocalBiome biome = world.getBiome(x, z);
+                LocalBiome biome = world.getBiome(playerX, playerZ);
                 BiomeIds biomeIds = biome.getIds();
                 sender.addChatMessage(new TextComponentString(""));
                 sender.addChatMessage(new TextComponentTranslation(MESSAGE_COLOR + "According to the biome generator, you are in the " + VALUE_COLOR + biome.getName() + MESSAGE_COLOR + " biome, with id " + VALUE_COLOR + biomeIds.getGenerationId()));
@@ -334,14 +393,14 @@ final class TXCommandHandler implements ICommand
                 if (CommandHelper.containsArgument(argString, "-f"))
                 {
                 	sender.addChatMessage(new TextComponentString(""));
-                    sender.addChatMessage(new TextComponentTranslation(MESSAGE_COLOR + "The base temperature of this biome is " + VALUE_COLOR + biome.getBiomeConfig().biomeTemperature + MESSAGE_COLOR + ", \n" + MESSAGE_COLOR + " at your height it is " + VALUE_COLOR + biome.getTemperatureAt(x, y, z)));
+                    sender.addChatMessage(new TextComponentTranslation(MESSAGE_COLOR + "The base temperature of this biome is " + VALUE_COLOR + biome.getBiomeConfig().biomeTemperature + MESSAGE_COLOR + ", \n" + MESSAGE_COLOR + " at your height it is " + VALUE_COLOR + biome.getTemperatureAt(playerX, playerY, playerZ)));
                 }
 
                 if (CommandHelper.containsArgument(argString, "-s"))
                 {
                     try
                     {
-                        LocalBiome savedBiome = world.getSavedBiome(x, z);
+                        LocalBiome savedBiome = world.getSavedBiome(playerX, playerZ);
                         BiomeIds savedIds = savedBiome.getIds();
                         sender.addChatMessage(new TextComponentString(""));
                         sender.addChatMessage(new TextComponentTranslation(MESSAGE_COLOR + "According to the world save files, you are in the " + VALUE_COLOR + savedBiome.getName() + MESSAGE_COLOR + " biome, with id " + VALUE_COLOR + savedIds.getSavedId()));
@@ -356,7 +415,7 @@ final class TXCommandHandler implements ICommand
                 {                	
                     try
                     {
-                        ForgeBiome savedBiome = (ForgeBiome)world.getSavedBiome(x, z);
+                        ForgeBiome savedBiome = (ForgeBiome)world.getSavedBiome(playerX, playerZ);
                         
             			Type[] types = BiomeDictionary.getTypesForBiome(savedBiome.biomeBase);
             			String typesString = "";
@@ -382,7 +441,7 @@ final class TXCommandHandler implements ICommand
                 {
                     try
                     {
-	                	ForgeBiome calculatedBiome = (ForgeBiome)world.getCalculatedBiome(x, z);
+	                	ForgeBiome calculatedBiome = (ForgeBiome)world.getCalculatedBiome(playerX, playerZ);
 	                	
 	                	sender.addChatMessage(new TextComponentString(""));
 	                    sender.addChatMessage(new TextComponentTranslation("-- Biome mob spawning settings --"));

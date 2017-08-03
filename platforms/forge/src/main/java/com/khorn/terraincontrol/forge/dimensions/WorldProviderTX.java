@@ -1,8 +1,11 @@
-package com.khorn.terraincontrol.forge;
+package com.khorn.terraincontrol.forge.dimensions;
 
 import com.khorn.terraincontrol.TerrainControl;
 import com.khorn.terraincontrol.configuration.WorldConfig;
 import com.khorn.terraincontrol.configuration.standard.WorldStandardValues;
+import com.khorn.terraincontrol.forge.ForgeEngine;
+import com.khorn.terraincontrol.forge.ForgeWorld;
+import com.khorn.terraincontrol.forge.TXPlugin;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;

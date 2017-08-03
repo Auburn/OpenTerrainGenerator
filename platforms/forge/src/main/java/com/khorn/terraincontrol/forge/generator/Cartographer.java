@@ -39,13 +39,14 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import com.khorn.terraincontrol.LocalMaterialData;
 import com.khorn.terraincontrol.TerrainControl;
 import com.khorn.terraincontrol.forge.ForgeWorld;
-import com.khorn.terraincontrol.forge.TXDimensionManager;
 import com.khorn.terraincontrol.forge.TXWorldType;
 import com.khorn.terraincontrol.util.ChunkCoordinate;
 import com.khorn.terraincontrol.util.NamedBinaryTag;
 import com.khorn.terraincontrol.util.NamedBinaryTag.Type;
 import com.khorn.terraincontrol.util.minecraftTypes.DefaultMaterial;
 import com.khorn.terraincontrol.forge.ForgeEngine;
+import com.khorn.terraincontrol.forge.dimensions.TXDimensionManager;
+import com.khorn.terraincontrol.forge.dimensions.TXTeleporter;
 
 public class Cartographer
 { 

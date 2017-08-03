@@ -6,61 +6,29 @@ import java.io.IOException;
 import com.khorn.terraincontrol.LocalWorld;
 import com.khorn.terraincontrol.TerrainControl;
 import com.khorn.terraincontrol.configuration.ConfigToNetworkSender;
-import com.khorn.terraincontrol.configuration.WorldConfig;
 import com.khorn.terraincontrol.configuration.standard.PluginStandardValues;
-import com.khorn.terraincontrol.forge.DimensionData;
 import com.khorn.terraincontrol.forge.ForgeEngine;
-import com.khorn.terraincontrol.forge.ForgeWorld;
-import com.khorn.terraincontrol.forge.OTGDimensionInfo;
-import com.khorn.terraincontrol.forge.TXDimensionManager;
 import com.khorn.terraincontrol.forge.TXPlugin;
-import com.khorn.terraincontrol.forge.client.events.DimensionSyncPacket;
+import com.khorn.terraincontrol.forge.dimensions.DimensionData;
+import com.khorn.terraincontrol.forge.dimensions.DimensionSyncPacket;
+import com.khorn.terraincontrol.forge.dimensions.OTGDimensionInfo;
+import com.khorn.terraincontrol.forge.dimensions.TXDimensionManager;
 import com.khorn.terraincontrol.logging.LogMarker;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import net.minecraftforge.fml.common.network.FMLOutboundHandler;
 import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
 import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class PlayerTracker
 {    
-	/*
-	@SubscribeEvent
-	//@SideOnly(Side.SERVER)
-	public void onEntityJoinWorld(EntityJoinWorldEvent e)
-	{		
-		if(e.getEntity() instanceof EntityPlayer)// && e.getEntity().dimension != 0)
-		{				
-			ForgeWorld forgeWorld = (ForgeWorld)((ForgeEngine)TerrainControl.getEngine()).getWorld(e.getEntity().worldObj);
-			TerrainControl.log(LogMarker.INFO, "JOINWORLDA " + e.getEntity().getName());
-			if(forgeWorld != null)
-			{
-				WorldConfig worldConfig = forgeWorld.getConfigs().getWorldConfig();
-				//if(worldConfig.isNightWorld)
-				{
-					TerrainControl.log(LogMarker.INFO, "JOINWORLDB " + e.getEntity().getName());
-					EntityPlayer player = (EntityPlayer)e.getEntity();
-					//player.capabilities.allowEdit = false;
-					player.capabilities.allowFlying = true;
-					player.sendPlayerAbilities();
-					return;
-				}
-			}
-		}
-	}
-	*/
-	
     @SubscribeEvent
     public void onConnectionCreated(FMLNetworkEvent.ServerConnectionFromClientEvent event)
     {
@@ -94,7 +62,12 @@ public class PlayerTracker
     		// Send worldconfig and biomeconfigs for each world.
         	
 			LocalWorld localWorld = ((ForgeEngine)TerrainControl.getEngine()).getOverWorld();
-
+			
+			if(localWorld == null)
+			{
+				throw new RuntimeException("Could not find the OTG overworld. Worlds must be created via OTG, you cannot use pre-existing (non-OTG) worlds with OTG.");
+			}
+			
 			// Overworld (dim 0)
 	        try
 	        {

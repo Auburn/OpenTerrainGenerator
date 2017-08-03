@@ -5,6 +5,7 @@ import com.khorn.terraincontrol.configuration.WeightedMobSpawnGroup;
 import com.khorn.terraincontrol.configuration.standard.MojangSettings.EntityCategory;
 import com.khorn.terraincontrol.logging.LogMarker;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EnumCreatureType;
@@ -14,6 +15,7 @@ import net.minecraft.world.biome.Biome.SpawnListEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map.Entry;
 
 /**
  * Methods for conversion between mob lists in Minecraft and in the plugin.
@@ -104,8 +106,7 @@ public final class MobSpawnGroupHelper
             Class<? extends EntityLiving> entityClass = toMinecraftClass(mobGroup.getInternalName());
             if (entityClass != null)
             {
-                biomeList.add(
-                        new SpawnListEntry(entityClass, mobGroup.getWeight(), mobGroup.getMin(), mobGroup.getMax()));
+                biomeList.add(new SpawnListEntry(entityClass, mobGroup.getWeight(), mobGroup.getMin(), mobGroup.getMax()));
             } else
             {
                 // The .toLowerCase() is just a safeguard so that we get
@@ -128,17 +129,23 @@ public final class MobSpawnGroupHelper
     @SuppressWarnings("unchecked")
 	static Class<? extends EntityLiving> toMinecraftClass(String mobName)
     {
-    	return (Class<? extends EntityLiving>) EntityList.NAME_TO_CLASS.get(mobName); // Quick fix
+    	Class<? extends EntityLiving> mob = (Class<? extends EntityLiving>) EntityList.NAME_TO_CLASS.get(mobName);
     	
-    	// TODO: This code was causing exceptions when used with Biome Bundle, fix it?
-    	/*
-        Class<? extends Entity> clazz = EntityList.NAME_TO_CLASS.get(mobName);
-        if (EntityLiving.class.isAssignableFrom(clazz))
-        {
-            return clazz.asSubclass(EntityLiving.class);
-        }
-        return null;
-        */
+    	// Sometimes modded mobs are registered in CLASS_TO_NAME but not in NAME_TO_CLASS. This seems to be a bug so fix it. 
+    	if(mob == null)
+    	{
+    		for(Entry<Class<? extends Entity>, String> registeredMob : EntityList.CLASS_TO_NAME.entrySet())
+    		{
+    			if(mobName.equals(registeredMob.getValue()))
+    			{
+    				EntityList.NAME_TO_CLASS.put(registeredMob.getValue(), registeredMob.getKey());
+    				mob = (Class<? extends EntityLiving>) registeredMob.getKey();
+    				break;
+    			}
+    		}
+    	}
+    	
+    	return mob; // Quick fix
     }
 
     /**

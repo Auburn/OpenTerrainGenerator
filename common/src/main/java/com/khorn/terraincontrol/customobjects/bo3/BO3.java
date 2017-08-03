@@ -212,6 +212,11 @@ public class BO3 implements CustomObject
         return true;
     }
 
+    public boolean SpawnAsTree(LocalWorld world, Random random, int x, int z)
+    {
+    	return spawn(world, random, x, z);
+    }
+    
     protected boolean spawn(LocalWorld world, Random random, int x, int z)
     {
         Rotation rotation = settings.rotateRandomly ? Rotation.getRandomRotation(random) : Rotation.NORTH;

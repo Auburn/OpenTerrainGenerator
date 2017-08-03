@@ -2,7 +2,6 @@ package com.khorn.terraincontrol.forge;
 
 import java.io.File;
 
-import com.google.common.base.Preconditions;
 import com.khorn.terraincontrol.LocalWorld;
 import com.khorn.terraincontrol.TerrainControl;
 import com.khorn.terraincontrol.configuration.WorldConfig;
@@ -28,7 +27,7 @@ public class TXWorldType extends WorldType
     public TXWorldType(WorldLoader worldLoader)
     {
         super(PluginStandardValues.PLUGIN_NAME_SHORT);
-        this.worldLoader = Preconditions.checkNotNull(worldLoader, "worldLoader");
+        this.worldLoader = worldLoader;
     }
 
     @Override

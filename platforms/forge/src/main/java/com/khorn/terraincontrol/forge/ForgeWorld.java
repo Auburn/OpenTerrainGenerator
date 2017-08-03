@@ -9,6 +9,7 @@ import com.khorn.terraincontrol.configuration.standard.MojangSettings.EntityCate
 import com.khorn.terraincontrol.customobjects.CustomObjectStructureCache;
 import com.khorn.terraincontrol.customobjects.bo3.EntityFunction;
 import com.khorn.terraincontrol.exception.BiomeNotFoundException;
+import com.khorn.terraincontrol.forge.dimensions.TXDimensionManager;
 import com.khorn.terraincontrol.forge.generator.TXBiome;
 import com.khorn.terraincontrol.forge.generator.TXChunkGenerator;
 import com.khorn.terraincontrol.forge.generator.structure.*;

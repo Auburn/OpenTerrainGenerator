@@ -1,4 +1,4 @@
-package com.khorn.terraincontrol.forge.generator;
+package com.khorn.terraincontrol.forge.dimensions;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 
@@ -12,6 +12,7 @@ import com.khorn.terraincontrol.TerrainControl;
 import com.khorn.terraincontrol.forge.ForgeEngine;
 import com.khorn.terraincontrol.forge.ForgeMaterialData;
 import com.khorn.terraincontrol.forge.ForgeWorld;
+import com.khorn.terraincontrol.forge.generator.Cartographer;
 import com.khorn.terraincontrol.logging.LogMarker;
 
 import net.minecraft.block.Block;
