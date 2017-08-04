@@ -1,4 +1,4 @@
-##  OpenTerrainGenerator (A TerrainControl fork) by PG85/PeeGee85
+##  OpenTerrainGenerator by PG85/PeeGee85
 
 OpenTerrainGenerator is an advanced world generator for Minecraft. Through various configuration files it gives the user control over almost every aspect of Minecraft terrain generation, with no knowledge of Java required. It can be used on Forge servers and on singleplayer with Forge (Bukkit should work but may be broken atm). OpenTerrainGenerator is a fork of Terrain Control, which is the successor to the old <a href="http://www.minecraftforum.net/topic/313991-phoenixterrainmod/">PhoenixTerrainMod</a>, which was based on the popular <a href="http://www.minecraftforum.net/topic/71565-biomemod/">BiomeTerrainMod</a>. 
 
@@ -14,9 +14,9 @@ OpenTerrainGenerator is an advanced world generator for Minecraft. Through vario
 <li>Custom trees and other objects (BO2 and BO3)</li>
 <li>Block replacement</li>
 <li>Visual settings like custom foliage colors (OpenTerrainGenerator client required)</li>
-<li>Essentially everything!</li>
+<li>Essentially everything.</li>
 </ul>
-To learn more, check out <a href="https://biomebundle.wixsite.com/openterraingen"><strong>all of OpenTerrainGenerator's features</strong></a>!
+To learn more, check out <a href="https://biomebundle.wixsite.com/openterraingen"><strong>all of OpenTerrainGenerator's features</strong></a>.
 
 ## Links
 * [Project home](https://biomebundle.wixsite.com/openterraingen)
