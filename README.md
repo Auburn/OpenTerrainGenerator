@@ -19,7 +19,7 @@ OpenTerrainGenerator is an advanced world generator for Minecraft. Through vario
 To learn more, check out <a href="https://biomebundle.wixsite.com/openterraingen"><strong>all of OpenTerrainGenerator's features</strong></a>!
 
 ## Links
-* Project home at (https://biomebundle.wixsite.com/openterraingen)
+* [Project home](https://biomebundle.wixsite.com/openterraingen)
 * [CurseForge](https://minecraft.curseforge.com/projects/open-terrain-generator)
 * [Wiki](http://openterraingen.wikia.com/wiki/Open_Terrain_Generator_Wiki)
 * [OTGEdit](https://minecraft.curseforge.com/projects/otgedit-gui-for-openterraingenerator-terraincontrol-and-minecraft-worlds-mod)
@@ -30,7 +30,7 @@ To learn more, check out <a href="https://biomebundle.wixsite.com/openterraingen
 * [Version history](https://github.com/MCTCP/TerrainControl/wiki/Version-history)
 
 ## Original TerrainControl developers and maintainers
-* <a href="https://github.com/rutgerkok">Rutger Kok</a>
+* <a href="https://github.com/rutgerkok">Rutgerkok</a>
 * <a href="https://github.com/Timethor">Timethor</a>
-* <a href="https://github.com/oloflarsson">oloflarsson</a>
+* <a href="https://github.com/oloflarsson">Oloflarsson</a>
 * <a href="http://dev.bukkit.org/profiles/Khoorn/">Khoorn</a> (known as <a href="https://github.com/Wickth">Wickth</a> on GitHub)
